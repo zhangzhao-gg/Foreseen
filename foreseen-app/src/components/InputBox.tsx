@@ -41,7 +41,7 @@ export default function InputBox({ onSubmit, onFaded, fading }: Props) {
       {
         opacity: 0,
         y: 3,
-        filter: 'blur(3px)',
+        filter: 'blur(1.5px)',
         scale: 0.99,
         duration: 1.5,
         ease: 'power2.in',

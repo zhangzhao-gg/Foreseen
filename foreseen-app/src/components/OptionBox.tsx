@@ -30,7 +30,7 @@ export default function OptionBox({ options, onChoice }: Props) {
     items.forEach((item, i) => {
       gsap.fromTo(
         item,
-        { opacity: 0, filter: 'blur(3px)' },
+        { opacity: 0, filter: 'blur(1.5px)' },
         {
           opacity: 1,
           filter: 'blur(0px)',

@@ -24,7 +24,7 @@ export default function SystemResponse({ lines }: Props) {
     for (let i = animatedCountRef.current; i < els.length; i++) {
       gsap.fromTo(
         els[i],
-        { opacity: 0, filter: 'blur(4px)' },
+        { opacity: 0, filter: 'blur(1.5px)' },
         {
           opacity: 1,
           filter: 'blur(0px)',

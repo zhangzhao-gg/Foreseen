@@ -42,8 +42,9 @@ export default function BookPage() {
     log('show', resp.text)
     historyRef.current.push({ role: 'assistant', content: resp.text })
 
-    // 确保 responseRef 重置 opacity（上轮淡出可能留下 0）
+    // 杀掉旧动画，防止 onComplete 踩踏新状态
     if (responseRef.current) {
+      gsap.killTweensOf(responseRef.current)
       gsap.set(responseRef.current, { opacity: 1, filter: 'none' })
     }
 
@@ -96,12 +97,13 @@ export default function BookPage() {
     inkFadedRef.current = false
     pendingRef.current = null
 
-    // 与 InputBox 墨水吸收同步：统一 duration 和 ease
+    // kill 残留动画，再启动新淡出
     const targets = [promptRef.current, responseRef.current].filter(Boolean)
     targets.forEach(el => {
+      gsap.killTweensOf(el!)
       gsap.to(el!, {
         opacity: 0,
-        filter: 'blur(3px)',
+        filter: 'blur(1.5px)',
         duration: 1.5,
         ease: 'power2.in',
         onComplete: () => {
@@ -135,9 +137,10 @@ export default function BookPage() {
 
     // 整个回复区（问题+选项）一起淡出
     if (responseRef.current) {
+      gsap.killTweensOf(responseRef.current)
       gsap.to(responseRef.current, {
         opacity: 0,
-        filter: 'blur(3px)',
+        filter: 'blur(1.5px)',
         duration: 1,
         ease: 'power2.in',
         onComplete: () => {
