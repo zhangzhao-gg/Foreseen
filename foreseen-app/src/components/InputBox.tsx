@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 react, gsap
- * [OUTPUT]: InputBox 组件，含墨水吸收动画
+ * [OUTPUT]: InputBox 组件，含墨水吸收动画 + 幽灵打字预言
  * [POS]: components/ 的输入层，文字在原地消失不跳位
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -13,19 +13,32 @@ interface Props {
   onSubmit: (text: string) => void
   onFaded?: () => void
   fading?: boolean
+  prediction?: string
 }
 
-export default function InputBox({ onSubmit, onFaded, fading }: Props) {
+export default function InputBox({ onSubmit, onFaded, fading, prediction }: Props) {
   const [value, setValue] = useState('')
   const [idle, setIdle] = useState(false)
   const [active, setActive] = useState(false)
   const [frozenText, setFrozenText] = useState('')
+  const [ghostText, setGhostText] = useState('')
+
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const ghostTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const ghostIndexRef = useRef(0)
+  const ghostActiveRef = useRef(false)
   const boxRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const inkRef = useRef<HTMLParagraphElement>(null)
   const onFadedRef = useRef(onFaded)
   onFadedRef.current = onFaded
+
+  // 停止幽灵打字
+  const stopGhost = useCallback(() => {
+    ghostActiveRef.current = false
+    clearTimeout(ghostTimerRef.current)
+    ghostIndexRef.current = 0
+  }, [])
 
   // 挂载淡入
   useEffect(() => {
@@ -37,6 +50,39 @@ export default function InputBox({ onSubmit, onFaded, fading }: Props) {
     }
     if (!fading) textareaRef.current?.focus()
   }, [fading])
+
+  // 幽灵打字：prediction 变化时启动
+  useEffect(() => {
+    if (!prediction || fading) return
+    ghostActiveRef.current = true
+    ghostIndexRef.current = 0
+    setGhostText('')
+
+    // 延迟 0.8s 再开始打字
+    const startDelay = setTimeout(() => {
+      if (!ghostActiveRef.current) return
+      typeNext(prediction)
+    }, 800)
+
+    return () => {
+      clearTimeout(startDelay)
+      stopGhost()
+    }
+  }, [prediction, fading, stopGhost])
+
+  // 逐字打字，节奏不均匀
+  const typeNext = useCallback((text: string) => {
+    if (!ghostActiveRef.current) return
+    if (ghostIndexRef.current >= text.length) return
+
+    ghostIndexRef.current++
+    setGhostText(text.slice(0, ghostIndexRef.current))
+
+    // 不均匀间隔：60~180ms，偶尔停顿
+    const base = 80 + Math.random() * 80
+    const pause = Math.random() < 0.1 ? 300 : 0
+    ghostTimerRef.current = setTimeout(() => typeNext(text), base + pause)
+  }, [])
 
   // 墨水吸收动画
   useEffect(() => {
@@ -63,25 +109,39 @@ export default function InputBox({ onSubmit, onFaded, fading }: Props) {
   }, [fading])
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    // 用户开始打字，幽灵退场
+    if (ghostActiveRef.current) {
+      stopGhost()
+      setGhostText('')
+    }
+
     setValue(e.target.value)
     setActive(true)
     setIdle(false)
 
     clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => setIdle(true), 2000)
-  }, [])
+  }, [stopGhost])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey && value.trim()) {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      const text = value.trim()
+      // 如果有幽灵文字且用户没打字，回车确认幽灵文字
+      const text = value.trim() || ghostText.trim()
+      if (!text) return
+
+      stopGhost()
+      setGhostText('')
       setFrozenText(text)
       setValue('')
       setActive(false)
       setIdle(false)
       onSubmit(text)
     }
-  }, [value, onSubmit])
+  }, [value, ghostText, onSubmit, stopGhost])
+
+  const displayText = value || ghostText
+  const isGhost = !value && !!ghostText
 
   return (
     <div ref={boxRef} className={`input-box ${active ? 'input-box--active' : ''} ${idle ? 'input-box--idle' : ''}`}>
@@ -90,10 +150,15 @@ export default function InputBox({ onSubmit, onFaded, fading }: Props) {
         <p ref={inkRef} className="input-box__ink">{frozenText}</p>
       )}
 
+      {/* 幽灵文字层：AI 预言逐字显现 */}
+      {isGhost && !fading && (
+        <p className="input-box__ghost">{ghostText}</p>
+      )}
+
       {/* 输入区：吸收期间隐藏 */}
       <textarea
         ref={textareaRef}
-        className={`input-box__textarea${fading ? ' input-box__textarea--hidden' : ''}`}
+        className={`input-box__textarea${fading ? ' input-box__textarea--hidden' : ''}${isGhost ? ' input-box__textarea--hidden' : ''}`}
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}

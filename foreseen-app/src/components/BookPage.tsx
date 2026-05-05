@@ -28,6 +28,7 @@ const API_KEY = import.meta.env.VITE_MINIMAX_KEY || ''
 export default function BookPage() {
   const [phase, setPhase] = useState<Phase>('input')
   const [systemText, setSystemText] = useState<string[]>([])
+  const [prediction, setPrediction] = useState<string | undefined>()
   const [promptVisible, setPromptVisible] = useState(true)
 
   const historyRef = useRef<Message[]>([])
@@ -46,6 +47,7 @@ export default function BookPage() {
     }
 
     setSystemText([resp.text])
+    setPrediction(resp.prediction)
     setPhase('showing')
 
     // 停顿 2s 后淡出，回到输入
@@ -178,6 +180,7 @@ export default function BookPage() {
                 onSubmit={handleSubmit}
                 onFaded={handleInkFaded}
                 fading={phase === 'ink-fading'}
+                prediction={prediction}
               />
             )}
           </div>

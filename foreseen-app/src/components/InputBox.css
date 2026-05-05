@@ -65,3 +65,22 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* 幽灵文字：AI 预言，比用户墨水更淡 */
+.input-box__ghost {
+  position: absolute;
+  top: 0.8rem;
+  left: 1rem;
+  right: 1rem;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-style: italic;
+  line-height: 1.8;
+  color: var(--muted);
+  text-shadow: var(--ink-bleed);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
