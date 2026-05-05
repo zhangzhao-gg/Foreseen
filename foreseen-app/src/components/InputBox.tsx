@@ -21,12 +21,20 @@ export default function InputBox({ onSubmit, onFaded, fading }: Props) {
   const [active, setActive] = useState(false)
   const [frozenText, setFrozenText] = useState('')
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const boxRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const inkRef = useRef<HTMLParagraphElement>(null)
   const onFadedRef = useRef(onFaded)
   onFadedRef.current = onFaded
 
+  // 挂载淡入
   useEffect(() => {
+    if (!fading && boxRef.current) {
+      gsap.fromTo(boxRef.current,
+        { opacity: 0, filter: 'blur(1.5px)' },
+        { opacity: 1, filter: 'none', duration: 1.2, ease: 'power2.out' }
+      )
+    }
     if (!fading) textareaRef.current?.focus()
   }, [fading])
 
@@ -76,7 +84,7 @@ export default function InputBox({ onSubmit, onFaded, fading }: Props) {
   }, [value, onSubmit])
 
   return (
-    <div className={`input-box ${active ? 'input-box--active' : ''} ${idle ? 'input-box--idle' : ''}`}>
+    <div ref={boxRef} className={`input-box ${active ? 'input-box--active' : ''} ${idle ? 'input-box--idle' : ''}`}>
       {/* 冻结文字：提交后显示，原地播放吸收动画 */}
       {fading && frozenText && (
         <p ref={inkRef} className="input-box__ink">{frozenText}</p>

@@ -66,14 +66,15 @@
   user-select: none;
 }
 
-/* 书写区：单一区域，所有交互在此发生 */
+/* 书写区：居中，所有内容在同一位置交替 */
 .book-page__content {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  align-items: stretch;
+  justify-content: center;
   min-height: 50vh;
-  gap: 2.5rem;
+  gap: 2rem;
 }
 
 /* 初始提示语 */
@@ -82,6 +83,7 @@
   font-size: 24px;
   text-shadow: var(--ink-bleed);
   line-height: 1.8;
+  text-align: center;
 }
 
 /* 回复区容器 */
@@ -89,6 +91,7 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  width: 100%;
 }
 
 /* 思考脉冲 */
