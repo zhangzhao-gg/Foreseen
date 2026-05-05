@@ -59,7 +59,7 @@
   top: 1.5rem;
   left: 3rem;
   font-family: var(--font-serif);
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -79,7 +79,7 @@
 /* 初始提示语 */
 .book-page__prompt {
   color: var(--ink-deep);
-  font-size: 20px;
+  font-size: 24px;
   text-shadow: var(--ink-bleed);
   line-height: 1.8;
 }

@@ -35,7 +35,7 @@
   resize: none;
   background: transparent;
   font-family: var(--font-serif);
-  font-size: 17px;
+  font-size: 20px;
   line-height: 1.8;
   color: var(--ink-deep);
   text-shadow: var(--ink-bleed);
@@ -54,7 +54,7 @@
   left: 1rem;
   right: 1rem;
   font-family: var(--font-serif);
-  font-size: 17px;
+  font-size: 20px;
   font-style: italic;
   line-height: 1.8;
   color: var(--ink-deep);
