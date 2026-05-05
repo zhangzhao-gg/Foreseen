@@ -1,6 +1,6 @@
 /* ========================================
  * BookPage · 汤姆的日记本
- * 一片纸面，文字出现又消失
+ * 一本翻开的旧日记，不是一张纸
  * ======================================== */
 
 .book-page {
@@ -22,26 +22,101 @@
   background: radial-gradient(ellipse at center, transparent 55%, rgba(42, 31, 24, 0.15) 100%);
 }
 
-/* 外层：drop-shadow 跟随撕裂轮廓 */
-.book-page__shadow {
+/* 整本书容器 */
+.book-page__book {
   position: relative;
+  display: flex;
   filter:
-    drop-shadow(0 2px 4px rgba(26, 20, 16, 0.35))
-    drop-shadow(0 8px 16px rgba(26, 20, 16, 0.2))
-    drop-shadow(0 16px 32px rgba(26, 20, 16, 0.1));
+    drop-shadow(0 4px 8px rgba(26, 20, 16, 0.4))
+    drop-shadow(0 12px 24px rgba(26, 20, 16, 0.25))
+    drop-shadow(0 20px 40px rgba(26, 20, 16, 0.15));
+}
+
+/* 书脊：左侧深色皮革 */
+.book-page__spine {
+  width: 28px;
+  min-height: 60vh;
+  background:
+    linear-gradient(90deg, #3d2b1a 0%, #5c3d24 40%, #4a3320 70%, #3d2b1a 100%);
+  border-radius: 4px 0 0 4px;
+  box-shadow:
+    inset -3px 0 6px rgba(0, 0, 0, 0.4),
+    inset 2px 0 4px rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 2;
+}
+
+/* 书脊纹理装饰线 */
+.book-page__spine::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  bottom: 10%;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(139, 94, 60, 0.3) 20%,
+    rgba(139, 94, 60, 0.5) 50%,
+    rgba(139, 94, 60, 0.3) 80%,
+    transparent 100%
+  );
+}
+
+/* 页面厚度：右侧和底部露出的纸边 */
+.book-page__pages {
+  position: absolute;
+  top: 3px;
+  right: -4px;
+  bottom: -4px;
+  width: calc(100% - 28px);
+  left: 28px;
+  border-radius: 0 2px 2px 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #c9b896 0px,
+      #d4c4a8 1px,
+      #bfae8e 2px
+    );
+  box-shadow:
+    2px 2px 4px rgba(26, 20, 16, 0.2),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+  z-index: 0;
 }
 
 /* 纸带本体 */
 .book-page__paper {
   position: relative;
-  width: min(680px, calc(100vw - 4rem));
+  width: min(640px, calc(100vw - 6rem));
   min-height: 60vh;
   background: var(--parchment);
   background-image: linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
   background-size: 100% 1.6rem;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.08);
-  padding: 3.5rem 3rem;
+  padding: 3.5rem 3rem 3.5rem 3.5rem;
+  border-radius: 0 2px 2px 0;
+  z-index: 1;
   filter: url(#paper-edge);
+}
+
+/* 装订线阴影：左内侧纵向暗影 */
+.book-page__gutter {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 40px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(26, 20, 16, 0.15) 0%,
+    rgba(26, 20, 16, 0.06) 40%,
+    transparent 100%
+  );
+  z-index: 10;
 }
 
 /* 纸张噪点 */
@@ -57,7 +132,7 @@
 .book-page__title {
   position: absolute;
   top: 1.5rem;
-  left: 3rem;
+  left: 3.5rem;
   font-family: var(--font-serif);
   font-size: 15px;
   letter-spacing: 2px;
@@ -107,6 +182,21 @@
 @keyframes pulse {
   0%, 100% { opacity: 0.3; transform: scale(1); }
   50% { opacity: 0.8; transform: scale(1.5); }
+}
+
+/* 终结语 */
+.book-page__farewell {
+  color: var(--muted);
+  font-size: 18px;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.8;
+  animation: farewell-in 2.5s var(--ease-breath) both;
+}
+
+@keyframes farewell-in {
+  0% { opacity: 0; filter: blur(2px); }
+  100% { opacity: 1; filter: blur(0px); }
 }
 
 /* 滚动条隐藏 */

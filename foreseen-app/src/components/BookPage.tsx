@@ -16,7 +16,7 @@ const log = (tag: string, detail?: unknown) => {
   if (import.meta.env.DEV) console.log(`[Foreseen] ${tag}`, detail ?? '')
 }
 
-type Phase = 'input' | 'ink-fading' | 'responding' | 'showing'
+type Phase = 'input' | 'ink-fading' | 'responding' | 'showing' | 'closed'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -50,7 +50,8 @@ export default function BookPage() {
     setPrediction(resp.prediction)
     setPhase('showing')
 
-    // 停顿 2s 后淡出，回到输入
+    // 停顿后淡出
+    const pause = resp.ending ? 3500 : 2000
     setTimeout(() => {
       if (responseRef.current) {
         gsap.to(responseRef.current, {
@@ -60,11 +61,15 @@ export default function BookPage() {
           ease: 'power2.in',
           onComplete: () => {
             setSystemText([])
-            setPhase('input')
+            if (resp.ending) {
+              setPhase('closed')
+            } else {
+              setPhase('input')
+            }
           },
         })
       }
-    }, 2000)
+    }, pause)
   }, [])
 
   const sendToAI = useCallback(async (userContent: string) => {
@@ -155,8 +160,16 @@ export default function BookPage() {
         </filter>
       </svg>
 
-      <div className="book-page__shadow">
+      <div className="book-page__book">
+        {/* 书脊 */}
+        <div className="book-page__spine" />
+
+        {/* 页面厚度层 */}
+        <div className="book-page__pages" />
+
         <div className="book-page__paper">
+          {/* 装订线阴影 */}
+          <div className="book-page__gutter" />
           <span className="book-page__title">Foreseen</span>
           <div className="book-page__grain" />
 
@@ -183,9 +196,14 @@ export default function BookPage() {
                 prediction={prediction}
               />
             )}
+
+            {phase === 'closed' && (
+              <p className="book-page__farewell">你可以离开了。</p>
+            )}
           </div>
         </div>
       </div>
     </div>
   )
 }
+

@@ -70,7 +70,7 @@ export default function InputBox({ onSubmit, onFaded, fading, prediction }: Prop
     }
   }, [prediction, fading, stopGhost])
 
-  // 逐字打字，节奏不均匀
+  // 逐字打字：前3字慢，停顿1s，后续正常
   const typeNext = useCallback((text: string) => {
     if (!ghostActiveRef.current) return
     if (ghostIndexRef.current >= text.length) return
@@ -78,10 +78,17 @@ export default function InputBox({ onSubmit, onFaded, fading, prediction }: Prop
     ghostIndexRef.current++
     setGhostText(text.slice(0, ghostIndexRef.current))
 
-    // 不均匀间隔：60~180ms，偶尔停顿
-    const base = 80 + Math.random() * 80
-    const pause = Math.random() < 0.1 ? 300 : 0
-    ghostTimerRef.current = setTimeout(() => typeNext(text), base + pause)
+    let delay: number
+    if (ghostIndexRef.current < 3) {
+      delay = 250 + Math.random() * 150
+    } else if (ghostIndexRef.current === 3) {
+      delay = 1000
+    } else {
+      delay = 120 + Math.random() * 100
+      if (Math.random() < 0.08) delay += 400
+    }
+
+    ghostTimerRef.current = setTimeout(() => typeNext(text), delay)
   }, [])
 
   // 墨水吸收动画
