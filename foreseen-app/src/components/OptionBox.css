@@ -1,0 +1,37 @@
+/* ========================================
+ * OptionBox · 日记本写出的两行念头
+ * 没有边框，就是文字
+ * ======================================== */
+
+.option-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.option-line {
+  display: block;
+  color: var(--ink-deep);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.8;
+  text-shadow: var(--ink-bleed);
+  cursor: pointer;
+  opacity: 0;
+  transition: color 300ms var(--ease-breath);
+}
+
+.option-line:hover {
+  color: var(--accent);
+}
+
+.option-box__or {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  opacity: 0;
+  margin-top: 0.4rem;
+}
+

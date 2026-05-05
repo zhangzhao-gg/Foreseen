@@ -1,0 +1,38 @@
+/* ========================================
+ * 先见 Foreseen · 设计令牌
+ * 墨水色系 + 书页材质 + 墙面做旧
+ * ======================================== */
+
+:root {
+  /* -- 墙面 -- */
+  --surface: #f0ebe4;
+  --surface-alt: #e8e0d6;
+
+  /* -- 纸带 -- */
+  --parchment: #d4c4a8;
+
+  /* -- 墨水 -- */
+  --ink: #2a1f18;
+  --ink-deep: #1a1208;
+  --ink-system: #0f0a04;
+  --ink-faded: #9C8E78;
+  --ink-watermark: #D4C9B0;
+  --accent: #8b5e3c;
+  --muted: rgba(42, 31, 24, 0.45);
+  --border: rgba(139, 94, 60, 0.25);
+  --border-light: rgba(139, 94, 60, 0.12);
+
+  /* -- 油墨渗透 -- */
+  --ink-bleed: 0 0 0.5px #1a1208, 0.3px 0.3px 0.5px rgba(26, 18, 8, 0.4);
+  --ink-bleed-light: 0 0 0.4px rgba(26, 18, 8, 0.6);
+
+  /* -- 字体 -- */
+  --font-serif: 'Cormorant Garamond', 'Noto Serif SC', serif;
+  --font-mono: 'Courier Prime', monospace;
+
+  /* -- 动效 -- */
+  --ease-breath: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fade: 3500ms;
+  --duration-seep: 1800ms;
+  --duration-grow: 800ms;
+}

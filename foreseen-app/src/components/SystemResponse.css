@@ -1,0 +1,20 @@
+/* ========================================
+ * SystemResponse · 墨水从纸纤维凝聚渗出
+ * ======================================== */
+
+.system-response {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.system-response__line {
+  color: var(--ink-deep);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.9;
+  letter-spacing: 0.3px;
+  text-shadow: var(--ink-bleed);
+  opacity: 0;
+  will-change: opacity, filter;
+}

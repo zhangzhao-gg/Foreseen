@@ -1,0 +1,68 @@
+/* ========================================
+ * InputBox · 输入框
+ * ======================================== */
+
+.input-box {
+  position: relative;
+  width: 100%;
+  margin-top: auto;
+  border: 1px solid var(--border);
+  border-radius: 1px;
+  padding: 0.8rem 1rem;
+  transition:
+    border-color 600ms var(--ease-breath),
+    box-shadow 600ms var(--ease-breath);
+}
+
+.input-box--active {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(139, 94, 60, 0.1);
+}
+
+.input-box--idle {
+  animation: box-breathe 3s var(--ease-breath) infinite;
+}
+
+@keyframes box-breathe {
+  0%, 100% { box-shadow: 0 0 0 rgba(139, 94, 60, 0); }
+  50% { box-shadow: 0 0 16px rgba(139, 94, 60, 0.08); }
+}
+
+.input-box__textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--ink-deep);
+  text-shadow: var(--ink-bleed);
+  caret-color: var(--accent);
+}
+
+.input-box__textarea--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 冻结墨水：绝对定位覆盖 textarea，不影响布局 */
+.input-box__ink {
+  position: absolute;
+  top: 0.8rem;
+  left: 1rem;
+  right: 1rem;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-style: italic;
+  line-height: 1.8;
+  color: var(--ink-deep);
+  text-shadow: var(--ink-bleed);
+  will-change: opacity, filter, transform;
+  transform-origin: left center;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

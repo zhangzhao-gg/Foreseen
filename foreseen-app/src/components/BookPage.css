@@ -1,0 +1,116 @@
+/* ========================================
+ * BookPage · 汤姆的日记本
+ * 一片纸面，文字出现又消失
+ * ======================================== */
+
+.book-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  position: relative;
+}
+
+/* 电影暗角 */
+.book-page__vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(42, 31, 24, 0.15) 100%);
+}
+
+/* 外层：drop-shadow 跟随撕裂轮廓 */
+.book-page__shadow {
+  position: relative;
+  filter:
+    drop-shadow(0 2px 4px rgba(26, 20, 16, 0.35))
+    drop-shadow(0 8px 16px rgba(26, 20, 16, 0.2))
+    drop-shadow(0 16px 32px rgba(26, 20, 16, 0.1));
+}
+
+/* 纸带本体 */
+.book-page__paper {
+  position: relative;
+  width: min(680px, calc(100vw - 4rem));
+  min-height: 60vh;
+  background: var(--parchment);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 100% 1.6rem;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.08);
+  padding: 3.5rem 3rem;
+  filter: url(#paper-edge);
+}
+
+/* 纸张噪点 */
+.book-page__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='ng'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23ng)'/%3E%3C/svg%3E");
+}
+
+/* 标题 */
+.book-page__title {
+  position: absolute;
+  top: 1.5rem;
+  left: 3rem;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  user-select: none;
+}
+
+/* 书写区：单一区域，所有交互在此发生 */
+.book-page__content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 50vh;
+  gap: 2.5rem;
+}
+
+/* 初始提示语 */
+.book-page__prompt {
+  color: var(--ink-deep);
+  font-size: 20px;
+  text-shadow: var(--ink-bleed);
+  line-height: 1.8;
+}
+
+/* 回复区容器 */
+.book-page__response {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* 思考脉冲 */
+.book-page__pulse {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin: 1rem 0;
+  animation: pulse 1.5s var(--ease-breath) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.5); }
+}
+
+/* 滚动条隐藏 */
+.book-page__paper::-webkit-scrollbar {
+  display: none;
+}
+
+.book-page__paper {
+  scrollbar-width: none;
+}
