@@ -38,6 +38,10 @@ export default function BookPage() {
   const bookRef = useRef<HTMLDivElement>(null)
   const paperRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    document.documentElement.style.setProperty('--vh-lock', window.innerHeight + 'px')
+  }, [])
+
   // 开场翻书动画
   useEffect(() => {
     const book = bookRef.current
@@ -51,9 +55,24 @@ export default function BookPage() {
     tl.to(paper, { rotateY: 0, duration: 2.5, ease: 'power2.out' }, '-=1.2')
   }, [])
 
+  const updateIntensity = useCallback((resp: AIResponse) => {
+    const paper = paperRef.current
+    if (!paper) return
+
+    const rounds = historyRef.current.filter(m => m.role === 'assistant').length
+    const roundScore = Math.min(rounds / 5, 1)
+    const shortScore = resp.text.length < 20 ? 0.3 : 0
+    const predScore = resp.prediction ? 0.2 : 0
+    const endScore = resp.ending ? 0.3 : 0
+
+    const intensity = Math.min(roundScore + shortScore + predScore + endScore, 1)
+    paper.style.setProperty('--intensity', intensity.toFixed(2))
+  }, [])
+
   const showResponse = useCallback((resp: AIResponse) => {
     log('show', resp.text)
     historyRef.current.push({ role: 'assistant', content: resp.text })
+    updateIntensity(resp)
 
     if (responseRef.current) {
       gsap.killTweensOf(responseRef.current)
@@ -89,7 +108,7 @@ export default function BookPage() {
         })
       }
     }, pause)
-  }, [])
+  }, [updateIntensity])
 
   const sendToAI = useCallback(async (userContent: string) => {
     log('sendToAI', userContent)

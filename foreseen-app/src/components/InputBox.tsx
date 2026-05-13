@@ -202,8 +202,6 @@ export default function InputBox({ onSubmit, onFaded, fading, prediction }: Prop
       userOwnedRef.current = false
       setFrozenText(text)
       setValue('')
-      setActive(false)
-      setIdle(false)
       onSubmit(text)
     }
   }, [value, onSubmit, stopGhost])
