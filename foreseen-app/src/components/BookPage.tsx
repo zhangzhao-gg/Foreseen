@@ -16,6 +16,28 @@ const log = (tag: string, detail?: unknown) => {
   if (import.meta.env.DEV) console.log(`[Foreseen] ${tag}`, detail ?? '')
 }
 
+function TypedPrompt({ text, fading }: { text: string; fading?: boolean }) {
+  const [displayed, setDisplayed] = useState('')
+  const idxRef = useRef(0)
+
+  useEffect(() => {
+    idxRef.current = 0
+    setDisplayed('')
+    const tick = () => {
+      idxRef.current++
+      setDisplayed(text.slice(0, idxRef.current))
+      if (idxRef.current < text.length) {
+        timer = setTimeout(tick, 120 + Math.random() * 80)
+      }
+    }
+    let timer = setTimeout(tick, 600)
+    return () => clearTimeout(timer)
+  }, [text])
+
+  const cls = `book-page__prompt${fading ? ' book-page__prompt--fading' : ''}`
+  return <p className={cls}>{displayed}</p>
+}
+
 type Phase = 'input' | 'ink-fading' | 'responding' | 'showing' | 'closed'
 
 interface Message {
@@ -28,7 +50,8 @@ const API_KEY = import.meta.env.VITE_MINIMAX_KEY || ''
 export default function BookPage() {
   const [phase, setPhase] = useState<Phase>('input')
   const [systemText, setSystemText] = useState<string[]>([])
-  const [prediction, setPrediction] = useState<string | undefined>('你在想什么。')
+  const [prediction, setPrediction] = useState<string | undefined>()
+  const [showPrompt, setShowPrompt] = useState(true)
   const [crystal, setCrystal] = useState('')
 
   const historyRef = useRef<Message[]>([])
@@ -162,6 +185,7 @@ export default function BookPage() {
   const handleInkFaded = useCallback(() => {
     log('ink faded')
     inkFadedRef.current = true
+    setShowPrompt(false)
 
     const resp = pendingRef.current
     if (!resp) {
@@ -184,7 +208,8 @@ export default function BookPage() {
     applyIntensity(0)
     setSystemText([])
     setCrystal('')
-    setPrediction('你在想什么。')
+    setPrediction(undefined)
+    setShowPrompt(true)
     setPhase('input')
 
     // 新页从左翻入
@@ -291,12 +316,15 @@ export default function BookPage() {
             )}
 
             {(phase === 'input' || phase === 'ink-fading') && (
-              <InputBox
-                onSubmit={handleSubmit}
-                onFaded={handleInkFaded}
-                fading={phase === 'ink-fading'}
-                prediction={prediction}
-              />
+              <div className="book-page__input-wrap">
+                {showPrompt && <TypedPrompt text="你在想什么。" fading={phase === 'ink-fading'} />}
+                <InputBox
+                  onSubmit={handleSubmit}
+                  onFaded={handleInkFaded}
+                  fading={phase === 'ink-fading'}
+                  prediction={prediction}
+                />
+              </div>
             )}
 
             {phase === 'closed' && (

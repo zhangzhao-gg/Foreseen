@@ -245,6 +245,33 @@
   50% { opacity: 0.8; transform: scale(1.5); }
 }
 
+/* 输入区包裹：为 prompt 绝对定位提供参照 */
+.book-page__input-wrap {
+  position: relative;
+}
+
+/* 引导提示：绝对定位在输入框上方，不影响布局 */
+.book-page__prompt {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.9;
+  letter-spacing: 0.3px;
+  color: var(--ink-deep);
+  text-shadow: var(--ink-bleed);
+  margin: 0 0 0.5rem;
+  pointer-events: none;
+  transition: opacity 1.5s ease-in, filter 1.5s ease-in;
+}
+
+.book-page__prompt--fading {
+  opacity: 0;
+  filter: blur(1.5px);
+}
+
 /* 凝结语：对话结束后钉在纸上的一句话 */
 .book-page__crystal {
   color: var(--ink-deep);
