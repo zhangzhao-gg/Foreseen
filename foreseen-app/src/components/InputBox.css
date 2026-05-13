@@ -23,6 +23,12 @@
   caret-color: var(--accent);
 }
 
+.input-box__textarea::placeholder {
+  color: var(--muted);
+  font-style: italic;
+  opacity: 0.6;
+}
+
 .input-box__textarea--hidden {
   opacity: 0;
   pointer-events: none;

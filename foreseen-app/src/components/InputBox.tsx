@@ -218,6 +218,7 @@ export default function InputBox({ onSubmit, onFaded, fading, prediction }: Prop
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        placeholder="继续写……"
         rows={1}
         disabled={fading}
       />
