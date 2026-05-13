@@ -28,7 +28,7 @@ const API_KEY = import.meta.env.VITE_MINIMAX_KEY || ''
 export default function BookPage() {
   const [phase, setPhase] = useState<Phase>('input')
   const [systemText, setSystemText] = useState<string[]>([])
-  const [prediction, setPrediction] = useState<string | undefined>('写下那件你假装还没决定的事。')
+  const [prediction, setPrediction] = useState<string | undefined>('你在想什么。')
   const [crystal, setCrystal] = useState('')
 
   const historyRef = useRef<Message[]>([])
@@ -184,7 +184,7 @@ export default function BookPage() {
     applyIntensity(0)
     setSystemText([])
     setCrystal('')
-    setPrediction('写下那件你假装还没决定的事。')
+    setPrediction('你在想什么。')
     setPhase('input')
 
     // 新页从左翻入
