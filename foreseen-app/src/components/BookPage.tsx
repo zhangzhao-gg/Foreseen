@@ -55,19 +55,49 @@ export default function BookPage() {
     tl.to(paper, { rotateY: 0, duration: 2.5, ease: 'power2.out' }, '-=1.2')
   }, [])
 
-  const updateIntensity = useCallback((resp: AIResponse) => {
+  const intensityRef = useRef(0)
+
+  const applyIntensity = useCallback((t: number) => {
     const paper = paperRef.current
     if (!paper) return
 
+    paper.style.setProperty('--rune-opacity', (0.3 + t * 0.5).toFixed(2))
+    paper.style.setProperty('--rune-duration', (8 - t * 5).toFixed(1) + 's')
+
+    const si = (0.08 + t * 0.12).toFixed(2)
+    const sw = (0.04 + t * 0.08).toFixed(2)
+    paper.style.boxShadow = `inset 0 0 20px rgba(0,0,0,${si}), inset 0 0 60px rgba(100,70,30,${sw})`
+
+    const r = Math.round(42 + t * (140 - 42))
+    const g = Math.round(31 + t * (20 - 31))
+    const b = Math.round(24 + t * (20 - 24))
+    paper.style.setProperty('--rune-color', `rgb(${r},${g},${b})`)
+
+    const glowAlpha = (t * 0.8).toFixed(2)
+    const glowSpread = Math.round(t * 12)
+    paper.style.setProperty('--rune-glow', `0 0 ${glowSpread}px rgba(140,20,20,${glowAlpha})`)
+  }, [])
+
+  const updateIntensity = useCallback((resp: AIResponse) => {
     const rounds = historyRef.current.filter(m => m.role === 'assistant').length
     const roundScore = Math.min(rounds / 5, 1)
     const shortScore = resp.text.length < 20 ? 0.3 : 0
     const predScore = resp.prediction ? 0.2 : 0
     const endScore = resp.ending ? 0.3 : 0
 
-    const intensity = Math.min(roundScore + shortScore + predScore + endScore, 1)
-    paper.style.setProperty('--intensity', intensity.toFixed(2))
-  }, [])
+    const target = Math.min(roundScore + shortScore + predScore + endScore, 1)
+    const obj = { val: intensityRef.current }
+
+    gsap.to(obj, {
+      val: target,
+      duration: 3.5,
+      ease: 'power2.inOut',
+      onUpdate: () => {
+        intensityRef.current = obj.val
+        applyIntensity(obj.val)
+      },
+    })
+  }, [applyIntensity])
 
   const showResponse = useCallback((resp: AIResponse) => {
     log('show', resp.text)
