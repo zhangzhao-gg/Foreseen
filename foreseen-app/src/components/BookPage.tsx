@@ -5,7 +5,7 @@
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import InputBox from './InputBox'
 import SystemResponse from './SystemResponse'
@@ -28,14 +28,28 @@ const API_KEY = import.meta.env.VITE_MINIMAX_KEY || ''
 export default function BookPage() {
   const [phase, setPhase] = useState<Phase>('input')
   const [systemText, setSystemText] = useState<string[]>([])
-  const [prediction, setPrediction] = useState<string | undefined>()
-  const [promptVisible, setPromptVisible] = useState(true)
+  const [prediction, setPrediction] = useState<string | undefined>('写下那件你假装还没决定的事。')
+  const [crystal, setCrystal] = useState('')
 
   const historyRef = useRef<Message[]>([])
   const pendingRef = useRef<AIResponse | null>(null)
   const inkFadedRef = useRef(false)
-  const promptRef = useRef<HTMLParagraphElement>(null)
   const responseRef = useRef<HTMLDivElement>(null)
+  const bookRef = useRef<HTMLDivElement>(null)
+  const paperRef = useRef<HTMLDivElement>(null)
+
+  // 开场翻书动画
+  useEffect(() => {
+    const book = bookRef.current
+    const paper = paperRef.current
+    if (!book || !paper) return
+
+    const tl = gsap.timeline()
+    tl.set(paper, { rotateY: -110, transformOrigin: 'left center' })
+    tl.set(book, { opacity: 0, scale: 0.97 })
+    tl.to(book, { opacity: 1, scale: 1, duration: 1.8, ease: 'power1.out' })
+    tl.to(paper, { rotateY: 0, duration: 2.5, ease: 'power2.out' }, '-=1.2')
+  }, [])
 
   const showResponse = useCallback((resp: AIResponse) => {
     log('show', resp.text)
@@ -50,7 +64,6 @@ export default function BookPage() {
     setPrediction(resp.prediction)
     setPhase('showing')
 
-    // 停顿后淡出
     const pause = resp.ending ? 3500 : 2000
     setTimeout(() => {
       if (responseRef.current) {
@@ -62,6 +75,12 @@ export default function BookPage() {
           onComplete: () => {
             setSystemText([])
             if (resp.ending) {
+              // 取最短的 AI 回复作为凝结语
+              const aiReplies = historyRef.current
+                .filter(m => m.role === 'assistant')
+                .map(m => m.content)
+              const shortest = aiReplies.reduce((a, b) => a.length <= b.length ? a : b, aiReplies[0])
+              setCrystal(shortest)
               setPhase('closed')
             } else {
               setPhase('input')
@@ -110,22 +129,16 @@ export default function BookPage() {
     inkFadedRef.current = false
     pendingRef.current = null
 
-    const targets = [promptRef.current, responseRef.current].filter(Boolean)
-    targets.forEach(el => {
-      gsap.killTweensOf(el!)
-      gsap.to(el!, {
+    if (responseRef.current) {
+      gsap.killTweensOf(responseRef.current)
+      gsap.to(responseRef.current, {
         opacity: 0,
         filter: 'blur(1.5px)',
         duration: 1.5,
         ease: 'power2.in',
-        onComplete: () => {
-          if (el === promptRef.current) setPromptVisible(false)
-          if (el === responseRef.current) {
-            setSystemText([])
-          }
-        },
+        onComplete: () => setSystemText([]),
       })
-    })
+    }
 
     try {
       await sendToAI(text)
@@ -160,24 +173,38 @@ export default function BookPage() {
         </filter>
       </svg>
 
-      <div className="book-page__book">
+      <div ref={bookRef} className="book-page__book">
         {/* 书脊 */}
         <div className="book-page__spine" />
 
         {/* 页面厚度层 */}
         <div className="book-page__pages" />
 
-        <div className="book-page__paper">
+        <div ref={paperRef} className="book-page__paper">
           {/* 装订线阴影 */}
           <div className="book-page__gutter" />
           <span className="book-page__title">Foreseen</span>
           <div className="book-page__grain" />
 
-          <div className="book-page__content">
-            {promptVisible && (
-              <p ref={promptRef} className="book-page__prompt">写下那件你假装还没决定的事。</p>
-            )}
+          {/* 上方铭文区 */}
+          <div className="book-page__runes book-page__runes--top">
+            <span className="book-page__rune">what is written cannot be unwritten</span>
+            <span className="book-page__rune">ᚦᛁᛋ ᛒᚩᚳ ᚱᛖᛗᛖᛗᛒᛖᚱᛋ</span>
+            <span className="book-page__rune">the ink remembers · ꙮ · every secret wants to be found</span>
+            <span className="book-page__rune">ϟ αληθεια κρυπτεται εν τω μελανι ϟ</span>
+            <span className="book-page__rune">ᛞᛟ ᚾᛟᛏ ᚨᛋᚲ · ᛃᛟᚢ ᚨᛚᚱᛖᚨᛞᛃ ᚲᚾᛟᚹ</span>
+          </div>
 
+          {/* 下方铭文区 */}
+          <div className="book-page__runes book-page__runes--bottom">
+            <span className="book-page__rune">ᚹᚺᚨᛏ ᛁᛋ ᛋᛖᛖᚾ ᚲᚨᚾᚾᛟᛏ ᛒᛖ ᚢᚾᛋᛖᛖᚾ</span>
+            <span className="book-page__rune">I await the one who already knows</span>
+            <span className="book-page__rune">𐤀𐤋 𐤕𐤊𐤕𐤁 · nothing disappears · 𐤀𐤋 𐤕𐤊𐤕𐤁</span>
+            <span className="book-page__rune">ᚠᛟᚱᛖᛋᛖᛖᚾ · ᚠᛟᚱᛖᛏᛟᛚᛞ · ᚠᛟᚱᛖᚹᚨᚱᚾᛖᛞ</span>
+            <span className="book-page__rune">it only changes form · ꙮ · veritas in atramento</span>
+          </div>
+
+          <div className="book-page__content">
             {phase === 'responding' && (
               <div className="book-page__pulse" />
             )}
@@ -198,7 +225,7 @@ export default function BookPage() {
             )}
 
             {phase === 'closed' && (
-              <p className="book-page__farewell">你可以离开了。</p>
+              <p className="book-page__crystal">{crystal}</p>
             )}
           </div>
         </div>

@@ -5,26 +5,7 @@
 .input-box {
   position: relative;
   width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 1px;
-  padding: 0.8rem 1rem;
-  transition:
-    border-color 600ms var(--ease-breath),
-    box-shadow 600ms var(--ease-breath);
-}
-
-.input-box--active {
-  border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(139, 94, 60, 0.1);
-}
-
-.input-box--idle {
-  animation: box-breathe 3s var(--ease-breath) infinite;
-}
-
-@keyframes box-breathe {
-  0%, 100% { box-shadow: 0 0 0 rgba(139, 94, 60, 0); }
-  50% { box-shadow: 0 0 16px rgba(139, 94, 60, 0.08); }
+  padding: 0.8rem 0;
 }
 
 .input-box__textarea {
@@ -32,6 +13,7 @@
   border: none;
   outline: none;
   resize: none;
+  overflow: hidden;
   background: transparent;
   font-family: var(--font-serif);
   font-size: 20px;
@@ -50,8 +32,8 @@
 .input-box__ink {
   position: absolute;
   top: 0.8rem;
-  left: 1rem;
-  right: 1rem;
+  left: 0;
+  right: 0;
   font-family: var(--font-serif);
   font-size: 20px;
   line-height: 1.8;

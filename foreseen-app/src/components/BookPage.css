@@ -19,13 +19,14 @@
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(42, 31, 24, 0.15) 100%);
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(30, 15, 5, 0.35) 100%);
 }
 
 /* 整本书容器 */
 .book-page__book {
   position: relative;
   display: flex;
+  perspective: 1200px;
   filter:
     drop-shadow(0 4px 8px rgba(26, 20, 16, 0.4))
     drop-shadow(0 12px 24px rgba(26, 20, 16, 0.25))
@@ -92,10 +93,20 @@
   position: relative;
   width: min(640px, calc(100vw - 6rem));
   min-height: 60vh;
-  background: var(--parchment);
-  background-image: linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
-  background-size: 100% 1.6rem;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.08);
+  background-color: var(--parchment);
+  background-image:
+    linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+    radial-gradient(ellipse 60px 40px at 85% 20%, rgba(120,80,30,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 35px 45px at 15% 75%, rgba(100,65,20,0.06) 0%, transparent 65%),
+    radial-gradient(ellipse 25px 30px at 60% 90%, rgba(110,70,25,0.05) 0%, transparent 60%),
+    linear-gradient(155deg, transparent 39.5%, rgba(0,0,0,0.03) 39.5%, rgba(0,0,0,0.03) 40%, transparent 40%),
+    linear-gradient(25deg, transparent 64.5%, rgba(0,0,0,0.02) 64.5%, rgba(0,0,0,0.02) 65%, transparent 65%),
+    radial-gradient(ellipse at center, transparent 50%, rgba(140,100,50,0.06) 100%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 100% 1.6rem, auto, auto, auto, auto, auto, auto, auto;
+  box-shadow:
+    inset 0 0 20px rgba(0,0,0,0.08),
+    inset 0 0 60px rgba(100,70,30,0.04);
   padding: 3.5rem 3rem 3.5rem 3.5rem;
   border-radius: 0 2px 2px 0;
   z-index: 1;
@@ -141,6 +152,52 @@
   user-select: none;
 }
 
+/* 魔法铭文区：上下两块，不侵入中央书写区 */
+.book-page__runes {
+  position: absolute;
+  left: 3.5rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+.book-page__runes--top {
+  top: 1.8rem;
+}
+
+.book-page__runes--bottom {
+  bottom: 1.5rem;
+}
+
+.book-page__rune {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-style: italic;
+  letter-spacing: 2.5px;
+  color: var(--ink);
+  opacity: 0.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: rune-breathe 8s var(--ease-breath) infinite;
+}
+
+.book-page__rune:nth-child(odd) { text-align: right; }
+.book-page__rune:nth-child(even) { text-align: left; }
+.book-page__rune:nth-child(1) { animation-delay: 0s; }
+.book-page__rune:nth-child(2) { animation-delay: -1.6s; }
+.book-page__rune:nth-child(3) { animation-delay: -3.2s; }
+.book-page__rune:nth-child(4) { animation-delay: -4.8s; }
+.book-page__rune:nth-child(5) { animation-delay: -6.4s; }
+
+@keyframes rune-breathe {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
 /* 书写区：居中，所有内容在同一位置交替 */
 .book-page__content {
   position: relative;
@@ -152,14 +209,6 @@
   gap: 2rem;
 }
 
-/* 初始提示语 */
-.book-page__prompt {
-  color: var(--ink-deep);
-  font-size: 24px;
-  text-shadow: var(--ink-bleed);
-  line-height: 1.8;
-  text-align: center;
-}
 
 /* 回复区容器 */
 .book-page__response {
@@ -184,19 +233,21 @@
   50% { opacity: 0.8; transform: scale(1.5); }
 }
 
-/* 终结语 */
-.book-page__farewell {
-  color: var(--muted);
-  font-size: 18px;
-  font-style: italic;
+/* 凝结语：对话结束后钉在纸上的一句话 */
+.book-page__crystal {
+  color: var(--ink-deep);
+  font-size: 26px;
+  font-weight: 600;
   text-align: center;
-  line-height: 1.8;
-  animation: farewell-in 2.5s var(--ease-breath) both;
+  line-height: 2;
+  letter-spacing: 0.5px;
+  text-shadow: var(--ink-bleed);
+  animation: crystal-in 3s var(--ease-breath) both;
 }
 
-@keyframes farewell-in {
-  0% { opacity: 0; filter: blur(2px); }
-  100% { opacity: 1; filter: blur(0px); }
+@keyframes crystal-in {
+  0% { opacity: 0; filter: blur(3px); transform: scale(0.97); }
+  100% { opacity: 1; filter: blur(0px); transform: scale(1); }
 }
 
 /* 滚动条隐藏 */

@@ -76,7 +76,7 @@ export async function chat(
     body: JSON.stringify({
       model: 'MiniMax-Text-01',
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history],
-      max_tokens: 100,
+      max_tokens: 200,
       temperature: 0.7,
     }),
   })

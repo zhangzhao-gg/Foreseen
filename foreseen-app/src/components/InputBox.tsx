@@ -61,11 +61,8 @@ interface Props {
 
 export default function InputBox({ onSubmit, onFaded, fading, prediction }: Props) {
   const [value, setValue] = useState('')
-  const [idle, setIdle] = useState(false)
-  const [active, setActive] = useState(false)
   const [frozenText, setFrozenText] = useState('')
 
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const ghostTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const ghostStepRef = useRef(0)
   const ghostActiveRef = useRef(false)
@@ -176,16 +173,19 @@ export default function InputBox({ onSubmit, onFaded, fading, prediction }: Prop
     return () => { tl.kill() }
   }, [fading])
 
+  const autoResize = useCallback(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = el.scrollHeight + 'px'
+  }, [])
+
+  useEffect(() => { autoResize() }, [value, autoResize])
+
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (ghostActiveRef.current) stopGhost()
     userOwnedRef.current = true
-
     setValue(e.target.value)
-    setActive(true)
-    setIdle(false)
-
-    clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(() => setIdle(true), 2000)
   }, [stopGhost])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -209,7 +209,7 @@ export default function InputBox({ onSubmit, onFaded, fading, prediction }: Prop
   }, [value, onSubmit, stopGhost])
 
   return (
-    <div ref={boxRef} className={`input-box ${active ? 'input-box--active' : ''} ${idle ? 'input-box--idle' : ''}`}>
+    <div ref={boxRef} className="input-box">
       {fading && frozenText && (
         <p ref={inkRef} className="input-box__ink">{frozenText}</p>
       )}
