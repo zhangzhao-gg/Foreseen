@@ -262,6 +262,37 @@
   100% { opacity: 1; filter: blur(0px); transform: scale(1); }
 }
 
+/* 翻页按钮：右下角折角 + 文字 */
+.book-page__turn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: linear-gradient(135deg, transparent 50%, rgba(42,31,24,0.12) 50%);
+  cursor: pointer;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 4px 6px;
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  transition: background 300ms var(--ease-breath), color 300ms var(--ease-breath);
+}
+
+.book-page__turn:hover {
+  background: linear-gradient(135deg, transparent 40%, rgba(42,31,24,0.2) 40%);
+  color: var(--accent);
+}
+
+.book-page__turn:active {
+  background: linear-gradient(135deg, transparent 35%, rgba(42,31,24,0.3) 35%);
+}
+
 /* 滚动条隐藏 */
 .book-page__paper::-webkit-scrollbar {
   display: none;

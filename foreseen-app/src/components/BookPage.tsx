@@ -172,6 +172,30 @@ export default function BookPage() {
     showResponse(resp)
   }, [showResponse])
 
+  const handleTurnPage = useCallback(() => {
+    const paper = paperRef.current
+    if (!paper) return
+
+    // 清空数据
+    historyRef.current = []
+    pendingRef.current = null
+    inkFadedRef.current = false
+    intensityRef.current = 0
+    applyIntensity(0)
+    setSystemText([])
+    setCrystal('')
+    setPrediction('写下那件你假装还没决定的事。')
+    setPhase('input')
+
+    // 新页从左翻入
+    gsap.set(paper, { rotateY: -110, transformOrigin: 'left center' })
+    gsap.to(paper, {
+      rotateY: 0,
+      duration: 2.5,
+      ease: 'power2.out',
+    })
+  }, [applyIntensity])
+
   const handleSubmit = useCallback(async (text: string) => {
     log('submit', text)
     setPhase('ink-fading')
@@ -252,6 +276,8 @@ export default function BookPage() {
             <span className="book-page__rune">ᚠᛟᚱᛖᛋᛖᛖᚾ · ᚠᛟᚱᛖᛏᛟᛚᛞ · ᚠᛟᚱᛖᚹᚨᚱᚾᛖᛞ</span>
             <span className="book-page__rune">it only changes form · ꙮ · veritas in atramento</span>
           </div>
+
+          <button className="book-page__turn" onClick={handleTurnPage}>翻页</button>
 
           <div className="book-page__content">
             {phase === 'responding' && (
