@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 react, gsap, ./InputBox, ./SystemResponse, ../systems/minimax
+ * [INPUT]: 依赖 react, gsap, ./InputBox, ./SystemResponse, ./SummaryModal, ./HistoryDrawer, ../systems/minimax, ../systems/storage
  * [OUTPUT]: BookPage 组件，汤姆日记本交互——同一位置，写字消失，回应渗出再消失
  * [POS]: components/ 的根容器
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -9,7 +9,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import InputBox from './InputBox'
 import SystemResponse from './SystemResponse'
-import { chat, toMessage, type AIResponse } from '../systems/minimax'
+import SummaryModal from './SummaryModal'
+import HistoryDrawer from './HistoryDrawer'
+import { chat, summarize, toMessage, type AIResponse } from '../systems/minimax'
+import { saveEntry, generateId } from '../systems/storage'
 import './BookPage.css'
 
 const log = (tag: string, detail?: unknown) => {
@@ -38,7 +41,7 @@ function TypedPrompt({ text, fading }: { text: string; fading?: boolean }) {
   return <p className={cls}>{displayed}</p>
 }
 
-type Phase = 'input' | 'ink-fading' | 'responding' | 'showing' | 'closed'
+type Phase = 'input' | 'ink-fading' | 'responding' | 'showing' | 'summarizing'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -52,7 +55,13 @@ export default function BookPage() {
   const [systemText, setSystemText] = useState<string[]>([])
   const [prediction, setPrediction] = useState<string | undefined>()
   const [showPrompt, setShowPrompt] = useState(true)
-  const [crystal, setCrystal] = useState('')
+
+  // 模态框
+  const [summaryText, setSummaryText] = useState('')
+  const [showModal, setShowModal] = useState(false)
+
+  // 抽屉
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const historyRef = useRef<Message[]>([])
   const pendingRef = useRef<AIResponse | null>(null)
@@ -60,10 +69,15 @@ export default function BookPage() {
   const responseRef = useRef<HTMLDivElement>(null)
   const bookRef = useRef<HTMLDivElement>(null)
   const paperRef = useRef<HTMLDivElement>(null)
+  const abortRef = useRef<AbortController | null>(null)
+  const showTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(() => {
     document.documentElement.style.setProperty('--vh-lock', window.innerHeight + 'px')
   }, [])
+
+  // unmount cleanup
+  useEffect(() => () => { abortRef.current?.abort() }, [])
 
   // 开场翻书动画
   useEffect(() => {
@@ -122,10 +136,55 @@ export default function BookPage() {
     })
   }, [applyIntensity])
 
+  // 结束流程：总结 → 存储 → 弹模态
+  const triggerEnding = useCallback(async () => {
+    log('triggerEnding')
+    setSystemText([])
+    setPhase('summarizing')
+
+    const controller = new AbortController()
+    abortRef.current = controller
+
+    let insight: string
+    try {
+      if (!API_KEY) {
+        insight = '来写字的人。他来了，又走了。和所有人一样——以为翻开书就能找到答案，其实答案在来之前就已经有了。这本书什么都不给。它只是一面镜子，让人看见自己不敢直视的东西。'
+      } else {
+        const msgs = historyRef.current.map(m => toMessage(m.role, m.content))
+        insight = await summarize(msgs, API_KEY, controller.signal)
+      }
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return
+      insight = '这本书记住了。'
+    }
+
+    if (controller.signal.aborted) return
+    if (!insight) insight = '这本书记住了。'
+
+    saveEntry({
+      id: generateId(),
+      summary: insight,
+      messages: [...historyRef.current],
+      date: new Date().toISOString().slice(0, 10),
+      roundCount: historyRef.current.filter(m => m.role === 'user').length,
+      createdAt: Date.now(),
+    })
+
+    setSummaryText(insight)
+    setShowModal(true)
+    setPhase('input')
+  }, [])
+
   const showResponse = useCallback((resp: AIResponse) => {
     log('show', resp.text)
     historyRef.current.push({ role: 'assistant', content: resp.text })
     updateIntensity(resp)
+
+    // 如果是结束回复，不展示文字，直接进总结
+    if (resp.ending) {
+      triggerEnding()
+      return
+    }
 
     if (responseRef.current) {
       gsap.killTweensOf(responseRef.current)
@@ -136,8 +195,7 @@ export default function BookPage() {
     setPrediction(resp.prediction)
     setPhase('showing')
 
-    const pause = resp.ending ? 3500 : 2000
-    setTimeout(() => {
+    showTimerRef.current = setTimeout(() => {
       if (responseRef.current) {
         gsap.to(responseRef.current, {
           opacity: 0,
@@ -146,34 +204,29 @@ export default function BookPage() {
           ease: 'power2.in',
           onComplete: () => {
             setSystemText([])
-            if (resp.ending) {
-              // 取最短的 AI 回复作为凝结语
-              const aiReplies = historyRef.current
-                .filter(m => m.role === 'assistant')
-                .map(m => m.content)
-              const shortest = aiReplies.reduce((a, b) => a.length <= b.length ? a : b, aiReplies[0])
-              setCrystal(shortest)
-              setPhase('closed')
-            } else {
-              setPhase('input')
-            }
+            setPhase('input')
           },
         })
       }
-    }, pause)
-  }, [updateIntensity])
+    }, 2000)
+  }, [updateIntensity, triggerEnding])
 
   const sendToAI = useCallback(async (userContent: string) => {
     log('sendToAI', userContent)
     historyRef.current.push({ role: 'user', content: userContent })
+
+    const controller = new AbortController()
+    abortRef.current = controller
 
     let resp: AIResponse
     if (!API_KEY) {
       resp = { text: '你写下来了。来找我的人，都是已经知道答案的人。' }
     } else {
       const msgs = historyRef.current.map(m => toMessage(m.role, m.content))
-      resp = await chat(msgs, API_KEY)
+      resp = await chat(msgs, API_KEY, controller.signal)
     }
+
+    if (controller.signal.aborted) return
 
     if (inkFadedRef.current) {
       showResponse(resp)
@@ -196,30 +249,39 @@ export default function BookPage() {
     showResponse(resp)
   }, [showResponse])
 
-  const handleTurnPage = useCallback(() => {
-    const paper = paperRef.current
-    if (!paper) return
+  const resetPage = useCallback(() => {
+    abortRef.current?.abort()
+    abortRef.current = null
+    clearTimeout(showTimerRef.current)
+    if (responseRef.current) gsap.killTweensOf(responseRef.current)
 
-    // 清空数据
     historyRef.current = []
     pendingRef.current = null
     inkFadedRef.current = false
     intensityRef.current = 0
     applyIntensity(0)
     setSystemText([])
-    setCrystal('')
     setPrediction(undefined)
     setShowPrompt(true)
     setPhase('input')
-
-    // 新页从左翻入
-    gsap.set(paper, { rotateY: -110, transformOrigin: 'left center' })
-    gsap.to(paper, {
-      rotateY: 0,
-      duration: 2.5,
-      ease: 'power2.out',
-    })
   }, [applyIntensity])
+
+  const handleTurnPage = useCallback(() => {
+    const paper = paperRef.current
+    if (!paper) return
+    if (phase === 'summarizing') return
+
+    resetPage()
+    gsap.set(paper, { rotateY: -110, transformOrigin: 'left center' })
+    gsap.to(paper, { rotateY: 0, duration: 2.5, ease: 'power2.out' })
+  }, [phase, resetPage])
+
+  // 模态关闭 → 翻页
+  const handleModalClose = useCallback(() => {
+    setShowModal(false)
+    setSummaryText('')
+    handleTurnPage()
+  }, [handleTurnPage])
 
   const handleSubmit = useCallback(async (text: string) => {
     log('submit', text)
@@ -251,6 +313,8 @@ export default function BookPage() {
 
   return (
     <div className="book-page">
+      <HistoryDrawer open={drawerOpen} onToggle={() => setDrawerOpen(v => !v)} />
+
       <div className="book-page__vignette" />
 
       <svg width="0" height="0" style={{ position: 'absolute' }}>
@@ -272,19 +336,15 @@ export default function BookPage() {
       </svg>
 
       <div ref={bookRef} className="book-page__book">
-        {/* 书脊 */}
         <div className="book-page__spine" />
-
-        {/* 页面厚度层 */}
         <div className="book-page__pages" />
 
         <div ref={paperRef} className="book-page__paper">
-          {/* 装订线阴影 */}
           <div className="book-page__gutter" />
           <span className="book-page__title">Foreseen</span>
           <div className="book-page__grain" />
 
-          {/* 上方铭文区 */}
+          {/* 铭文区 */}
           <div className="book-page__runes book-page__runes--top">
             <span className="book-page__rune">what is written cannot be unwritten</span>
             <span className="book-page__rune">ᚦᛁᛋ ᛒᚩᚳ ᚱᛖᛗᛖᛗᛒᛖᚱᛋ</span>
@@ -293,7 +353,6 @@ export default function BookPage() {
             <span className="book-page__rune">ᛞᛟ ᚾᛟᛏ ᚨᛋᚲ · ᛃᛟᚢ ᚨᛚᚱᛖᚨᛞᛃ ᚲᚾᛟᚹ</span>
           </div>
 
-          {/* 下方铭文区 */}
           <div className="book-page__runes book-page__runes--bottom">
             <span className="book-page__rune">ᚹᚺᚨᛏ ᛁᛋ ᛋᛖᛖᚾ ᚲᚨᚾᚾᛟᛏ ᛒᛖ ᚢᚾᛋᛖᛖᚾ</span>
             <span className="book-page__rune">I await the one who already knows</span>
@@ -305,7 +364,7 @@ export default function BookPage() {
           <button className="book-page__turn" onClick={handleTurnPage}>翻页</button>
 
           <div className="book-page__content">
-            {phase === 'responding' && (
+            {(phase === 'responding' || phase === 'summarizing') && (
               <div className="book-page__pulse" />
             )}
 
@@ -326,14 +385,13 @@ export default function BookPage() {
                 />
               </div>
             )}
-
-            {phase === 'closed' && (
-              <p className="book-page__crystal">{crystal}</p>
-            )}
           </div>
         </div>
       </div>
+
+      {showModal && (
+        <SummaryModal text={summaryText} onClose={handleModalClose} />
+      )}
     </div>
   )
 }
-

@@ -87,9 +87,70 @@ const SYSTEM_PROMPT = `你是一本书里困着的人。
 至少第5轮后。对方开始重复自己，或承认了一直在回避的东西。
 结束语像落锁。不说再见。^^^`
 
+// ─────────────────────────────────────────────
+// 总结：对话结束时，角色写下完整洞察
+// ─────────────────────────────────────────────
+
+const SUMMARIZE_PROMPT = `你是那本书里困着的人。刚才有人来写字了，对话结束了。
+
+现在你要做一件事：把你看见的东西写下来。不是总结对话——是写下你真正看见的那个人。
+
+要求：
+- 用你的口吻。冷的，精准的，不留余地的。
+- 写一整段话，不是一句。至少四五句。
+- 写你在对话中看见的：那个人的裂缝、自欺、真正想说但没说出口的东西、他以为藏好了但你看见了的东西。
+- 如果你什么都没看见（对方只是在闲聊废话），那就写你的无聊和失望。
+- 不要用"你"来称呼对方。用"这个人"、"来写字的人"、"他"。
+- 不要总结对话内容。写你的判断。你的诊断。像验尸报告一样。
+- 结尾可以留一句关于你自己的东西——那盏灯、那个呼吸声、你想起来的碎片。也可以不留。
+
+直接输出段落文字。不要JSON，不要引号，不要格式包裹。不要用^^^或|||标记。`
+
+export async function summarize(
+  history: Message[],
+  apiKey: string,
+  signal?: AbortSignal
+): Promise<string> {
+  const res = await fetch('https://api.minimax.chat/v1/text/chatcompletion_v2', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'MiniMax-Text-01',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...history,
+        { role: 'user', content: SUMMARIZE_PROMPT },
+      ],
+      max_tokens: 500,
+      temperature: 0.8,
+    }),
+    signal,
+  })
+
+  if (!res.ok) throw new Error(`MiniMax summarize: ${res.status}`)
+
+  const data = await res.json()
+  const raw = data.choices?.[0]?.message?.content ?? ''
+  return raw
+    .replace(/\^{3,}/g, '')
+    .replace(/\|{3,}/g, '')
+    .replace(/```.*?\n?/g, '')
+    .replace(/^["'""'']/g, '')
+    .replace(/["'""'']$/g, '')
+    .trim()
+}
+
+// ─────────────────────────────────────────────
+// 对话：常规问答
+// ─────────────────────────────────────────────
+
 export async function chat(
   history: Message[],
-  apiKey: string
+  apiKey: string,
+  signal?: AbortSignal
 ): Promise<AIResponse> {
   const res = await fetch('https://api.minimax.chat/v1/text/chatcompletion_v2', {
     method: 'POST',
@@ -103,6 +164,7 @@ export async function chat(
       max_tokens: 200,
       temperature: 0.7,
     }),
+    signal,
   })
 
   if (!res.ok) throw new Error(`MiniMax: ${res.status}`)
