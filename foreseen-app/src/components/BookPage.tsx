@@ -458,7 +458,6 @@ export default function BookPage() {
       <div ref={bookRef} className="book-page__book">
         <img src="/paper.png" alt="" className="book-page__prop book-page__prop--paper" />
         <img src="/ink.png" alt="" className="book-page__prop book-page__prop--ink" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
-        <img src="/bottle.png" alt="" className="book-page__prop book-page__prop--bottle" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
         <img src="/coin.png" alt="" className="book-page__prop book-page__prop--coin book-page__prop--coin-1" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
         <img src="/coin.png" alt="" className="book-page__prop book-page__prop--coin book-page__prop--coin-2" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
         <img src="/coin.png" alt="" className="book-page__prop book-page__prop--coin book-page__prop--coin-3" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />

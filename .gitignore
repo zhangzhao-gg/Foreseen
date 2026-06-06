@@ -1,3 +1,4 @@
 *.pem
 *.key
 docs/
+.DS_Store
