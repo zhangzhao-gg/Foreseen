@@ -20,26 +20,29 @@ const log = (tag: string, detail?: unknown) => {
 }
 
 /* 浮尘微粒 — 25 颗金色尘埃，极慢漂移 */
-const DUST_COUNT = 30
+const DUST_COUNT = 35
 const DUST_COLORS = [
-  { core: 'rgba(255,200,80,0.9)', glow: 'rgba(255,170,50,0.5)' },
-  { core: 'rgba(255,220,140,0.85)', glow: 'rgba(255,200,100,0.4)' },
-  { core: 'rgba(200,180,255,0.7)', glow: 'rgba(160,140,255,0.35)' },
+  { core: 'rgba(255,190,60,0.95)', glow: 'rgba(255,160,30,0.6)' },
+  { core: 'rgba(255,130,80,0.9)', glow: 'rgba(255,100,50,0.5)' },
+  { core: 'rgba(160,140,255,0.85)', glow: 'rgba(130,100,255,0.5)' },
+  { core: 'rgba(100,220,200,0.85)', glow: 'rgba(60,200,180,0.45)' },
+  { core: 'rgba(255,80,160,0.8)', glow: 'rgba(255,50,130,0.45)' },
+  { core: 'rgba(200,255,120,0.8)', glow: 'rgba(160,230,80,0.4)' },
 ]
 const dustParticles = Array.from({ length: DUST_COUNT }, (_, i) => {
-  const size = 2.5 + (i % 5) * 0.7
-  const duration = 16 + (i * 1.3) % 12
-  const delay = -(i * 0.9) % duration
+  const size = 3 + (i % 5) * 0.8
+  const duration = 8 + (i * 0.9) % 7
+  const delay = -(i * 0.6) % duration
   const left = (i * 13 + 5) % 90 + 5
   const top = (i * 19 + 7) % 90 + 5
-  const dx = -12 + (i % 7) * 5
-  const dy = -25 - (i % 5) * 7
-  const peakOpacity = 0.45 + (i % 4) * 0.12
+  const dx = -20 + (i % 9) * 6
+  const dy = -40 - (i % 6) * 8
+  const peakOpacity = 0.55 + (i % 4) * 0.12
   const color = DUST_COLORS[i % DUST_COLORS.length]
-  const twinkleDuration = 2 + (i % 6) * 0.7
-  const twinkleDelay = (i * 0.4) % twinkleDuration
-  const twinklePeak = 1.8 + (i % 3) * 0.6
-  const glowSize = 3 + (i % 4) * 2
+  const twinkleDuration = 1.5 + (i % 5) * 0.5
+  const twinkleDelay = (i * 0.3) % twinkleDuration
+  const twinklePeak = 2 + (i % 3) * 0.8
+  const glowSize = 4 + (i % 4) * 3
   return { size, duration, delay, left, top, dx, dy, peakOpacity, color, twinkleDuration, twinkleDelay, twinklePeak, glowSize }
 })
 
@@ -109,6 +112,20 @@ export default function BookPage() {
   const [systemText, setSystemText] = useState<string[]>([])
   const [prediction, setPrediction] = useState<string | undefined>()
   const [showPrompt, setShowPrompt] = useState(true)
+  const [loaded, setLoaded] = useState(false)
+  interface Stain { text: string; top: number; left: number; rotate: number; opacity: number; blur: number; scale: number }
+  const [stains, setStains] = useState<Stain[]>([])
+  const addStain = useCallback((text: string) => {
+    setStains(prev => [...prev, {
+      text,
+      top: 5 + Math.random() * 80,
+      left: Math.random() * 60,
+      rotate: -25 + Math.random() * 50,
+      opacity: 0.08 + Math.random() * 0.12,
+      blur: 0.4 + Math.random() * 0.8,
+      scale: 1 + Math.random() * 3,
+    }])
+  }, [])
 
   // 模态框
   const [summaryText, setSummaryText] = useState('')
@@ -133,8 +150,28 @@ export default function BookPage() {
   // unmount cleanup
   useEffect(() => () => { abortRef.current?.abort() }, [])
 
+  const [loadingFadeOut, setLoadingFadeOut] = useState(false)
+
+  // 等字体加载完成，最短展示 1.5s
+  useEffect(() => {
+    const start = performance.now()
+    document.fonts.ready.then(() => {
+      const elapsed = performance.now() - start
+      const remain = Math.max(0, 1500 - elapsed)
+      setTimeout(() => setLoadingFadeOut(true), remain)
+    })
+  }, [])
+
+  // fadeOut 后等 transition 结束再切场
+  useEffect(() => {
+    if (!loadingFadeOut) return
+    const timer = setTimeout(() => setLoaded(true), 1100)
+    return () => clearTimeout(timer)
+  }, [loadingFadeOut])
+
   // 开场翻书动画
   useEffect(() => {
+    if (!loaded) return
     const book = bookRef.current
     const paper = paperRef.current
     if (!book || !paper) return
@@ -144,7 +181,7 @@ export default function BookPage() {
     tl.set(book, { opacity: 0, scale: 0.97 })
     tl.to(book, { opacity: 1, scale: 1, duration: 1.8, ease: 'power1.out' })
     tl.to(paper, { rotateY: 0, duration: 2.5, ease: 'power2.out' }, '-=1.2')
-  }, [])
+  }, [loaded])
 
   const intensityRef = useRef(0)
 
@@ -257,6 +294,7 @@ export default function BookPage() {
           duration: 1.5,
           ease: 'power2.in',
           onComplete: () => {
+            addStain(resp.text)
             setSystemText([])
             setPhase('input')
           },
@@ -315,6 +353,7 @@ export default function BookPage() {
     intensityRef.current = 0
     applyIntensity(0)
     setSystemText([])
+    setStains([])
     setPrediction(undefined)
     setShowPrompt(true)
     setPhase('input')
@@ -339,6 +378,7 @@ export default function BookPage() {
 
   const handleSubmit = useCallback(async (text: string) => {
     log('submit', text)
+    addStain(text)
     setPhase('ink-fading')
     inkFadedRef.current = false
     pendingRef.current = null
@@ -365,6 +405,17 @@ export default function BookPage() {
     }
   }, [sendToAI, showResponse])
 
+  if (!loaded) {
+    return (
+      <div className={`book-page book-page--loading${loadingFadeOut ? ' book-page--loading-out' : ''}`}>
+        <div className="book-page__loader">
+          <span className="book-page__loader-symbol">ꙮ</span>
+          <span className="book-page__loader-text">loading...</span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="book-page">
       <HistoryDrawer open={drawerOpen} onToggle={() => setDrawerOpen(v => !v)} />
@@ -376,14 +427,14 @@ export default function BookPage() {
         <filter id="paper-edge">
           <feTurbulence
             type="fractalNoise"
-            baseFrequency="0.04"
-            numOctaves="4"
+            baseFrequency="0.08"
+            numOctaves="3"
             result="noise"
           />
           <feDisplacementMap
             in="SourceGraphic"
             in2="noise"
-            scale="3"
+            scale="2.5"
             xChannelSelector="R"
             yChannelSelector="G"
           />
@@ -392,7 +443,20 @@ export default function BookPage() {
 
       <div ref={bookRef} className="book-page__book">
         <div className="book-page__spine" />
-        <div className="book-page__page-under" />
+        <div className="book-page__page-under">
+          <span className="page-under__line">the one who writes here never leaves</span>
+          <span className="page-under__line">ᚦᛖ ᛒᛟᛟᚲ ᚹᚨᛋ ᚨᛚᚹᚨᛃᛋ ᛟᛈᛖᚾ</span>
+          <span className="page-under__line">你来过。你写过。你忘了。</span>
+          <span className="page-under__line">ϟ τα γραμμενα μενουν ϟ</span>
+          <span className="page-under__line">what was asked cannot be unasked</span>
+          <span className="page-under__line">ᛞᛟ ᚾᛟᛏ ᛏᚱᚢᛋᛏ ᚦᛖ ᛒᛚᚨᚾᚲ ᛈᚨᚷᛖ</span>
+          <span className="page-under__line">墨水干了，字还在呼吸</span>
+          <span className="page-under__line">every question is a confession</span>
+          <span className="page-under__line">ᚨᛚᛚ ᛈᚨᚷᛖᛋ ᛚᛖᚨᛞ ᛏᛟ ᚦᛁᛋ ᛟᚾᛖ</span>
+          <span className="page-under__line">𐤀𐤋 𐤕𐤊𐤕𐤁 · it was written before you came · 𐤀𐤋 𐤕𐤊𐤕𐤁</span>
+          <span className="page-under__line">这本书不回答问题，它只是让你听见自己的声音</span>
+          <span className="page-under__line">ᚠᛟᚱᛖᛋᛖᛖᚾ · ᚠᛟᚱᛖᚹᚱᛁᛏᛏᛖᚾ · ᚠᛟᚱᛖᚷᛟᚾᛖ</span>
+        </div>
         <div className="book-page__pages" />
 
         <div ref={paperRef} className="book-page__paper">
@@ -442,6 +506,24 @@ export default function BookPage() {
               </div>
             )}
           </div>
+
+          {stains.length > 0 && (
+            <div className="book-page__stains">
+              {stains.map((s, i) => (
+                <span
+                  key={i}
+                  className="book-page__stain"
+                  style={{
+                    top: s.top + '%',
+                    left: s.left + '%',
+                    transform: `rotate(${s.rotate}deg) scale(${s.scale})`,
+                    color: `rgba(100, 75, 45, ${s.opacity})`,
+                    '--stain-blur': `blur(${s.blur}px)`,
+                  } as React.CSSProperties}
+                >{s.text}</span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

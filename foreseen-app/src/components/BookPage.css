@@ -12,6 +12,75 @@
   padding: 3rem 2rem;
   position: relative;
   overflow: auto;
+  background-color: #4a2e15;
+  background-image:
+    repeating-linear-gradient(
+      92deg,
+      transparent 0px, transparent 5px,
+      rgba(0,0,0,0.07) 5px, rgba(0,0,0,0.07) 7px,
+      transparent 7px, transparent 14px,
+      rgba(30,15,5,0.06) 14px, rgba(30,15,5,0.06) 16px
+    ),
+    repeating-linear-gradient(
+      86deg,
+      transparent 0px, transparent 18px,
+      rgba(0,0,0,0.12) 18px, rgba(0,0,0,0.12) 21px,
+      transparent 21px, transparent 45px,
+      rgba(40,20,5,0.09) 45px, rgba(40,20,5,0.09) 49px,
+      transparent 49px, transparent 70px,
+      rgba(0,0,0,0.07) 70px, rgba(0,0,0,0.07) 72px
+    ),
+    radial-gradient(ellipse 30px 20px at 20% 35%, rgba(30,15,5,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 22px 16px at 75% 65%, rgba(25,12,3,0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 18px 24px at 55% 15%, rgba(35,18,5,0.1) 0%, transparent 60%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.09'/%3E%3C/svg%3E"),
+    linear-gradient(175deg, #4a2e15 0%, #5c3a1e 12%, #6b4423 30%, #573518 50%, #6e4825 65%, #5a3818 80%, #4a2a12 100%);
+}
+
+/* 加载状态 */
+.book-page--loading {
+  background: #1a1410;
+  opacity: 1;
+  transition: opacity 1s ease-out;
+}
+
+.book-page--loading-out {
+  opacity: 0 !important;
+}
+
+.book-page__loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+}
+
+.book-page__loader-symbol {
+  font-size: 52px;
+  color: rgba(200, 165, 80, 0.8);
+  text-shadow:
+    0 0 8px rgba(200, 160, 60, 0.6),
+    0 0 20px rgba(180, 140, 40, 0.4),
+    0 0 40px rgba(160, 120, 30, 0.2);
+  animation: loader-pulse 2s ease-in-out infinite;
+}
+
+.book-page__loader-text {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: rgba(200, 165, 80, 0.6);
+  text-shadow:
+    0 0 6px rgba(200, 160, 60, 0.5),
+    0 0 15px rgba(180, 140, 40, 0.3);
+  animation: loader-pulse 2s ease-in-out infinite;
+  animation-delay: 0.3s;
+}
+
+@keyframes loader-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
 }
 
 /* 电影暗角 */
@@ -109,7 +178,7 @@
     );
 }
 
-/* 下一页：翻页时露出的纸面，介于活页和页堆之间 */
+/* 下一页：翻页时露出的纸面，写满褪色铭文 */
 .book-page__page-under {
   position: absolute;
   top: 0;
@@ -124,7 +193,30 @@
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.03'/%3E%3C/svg%3E");
   box-shadow: inset 0 0 15px rgba(0,0,0,0.06);
   z-index: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 2.5rem 2rem 2.5rem 3rem;
 }
+
+.page-under__line {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-style: italic;
+  letter-spacing: 2px;
+  color: rgba(100, 75, 45, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+  pointer-events: none;
+}
+
+.page-under__line:nth-child(odd) { text-align: right; }
+.page-under__line:nth-child(even) { text-align: left; }
+.page-under__line:nth-child(3n) { letter-spacing: 3.5px; font-size: 11px; }
+.page-under__line:nth-child(4n+1) { font-size: 14px; opacity: 0.7; }
 
 /* 页面厚度：陈年旧纸堆，比活页面明显更暗更黄 */
 .book-page__pages {
@@ -221,12 +313,14 @@
   z-index: 10;
 }
 
-/* 纸张噪点 */
+/* 纸张噪点：叠在文字之上，模拟纸纤维覆盖墨迹 */
 .book-page__grain {
   position: absolute;
   inset: 0;
-  opacity: 0.04;
+  opacity: 0.08;
   pointer-events: none;
+  z-index: 12;
+  mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='ng'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23ng)'/%3E%3C/svg%3E");
 }
 
@@ -291,6 +385,31 @@
   50% { opacity: 0.7; }
 }
 
+/* 水渍残留：消失文字散落在纸面 */
+.book-page__stains {
+  position: absolute;
+  inset: 3.5rem 3rem 3.5rem 3.5rem;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.book-page__stain {
+  position: absolute;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1;
+  white-space: nowrap;
+  filter: blur(0.6px);
+  animation: stain-appear 2s ease-out backwards;
+}
+
+@keyframes stain-appear {
+  from { opacity: 0; filter: blur(4px); }
+  to { opacity: 1; filter: var(--stain-blur); }
+}
+
 /* 书写区：居中，所有内容在同一位置交替 */
 .book-page__content {
   position: relative;
@@ -300,6 +419,7 @@
   justify-content: center;
   min-height: calc(var(--vh-lock, 100vh) * 0.5);
   gap: 2rem;
+  text-shadow: var(--ink-bleed);
 }
 
 

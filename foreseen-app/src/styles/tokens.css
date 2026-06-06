@@ -22,9 +22,9 @@
   --border: rgba(139, 94, 60, 0.25);
   --border-light: rgba(139, 94, 60, 0.12);
 
-  /* -- 油墨渗透 -- */
-  --ink-bleed: 0 0 0.5px #1a1208, 0.3px 0.3px 0.5px rgba(26, 18, 8, 0.4);
-  --ink-bleed-light: 0 0 0.4px rgba(26, 18, 8, 0.6);
+  /* -- 油墨渗透：模拟墨水在纸纤维中不均匀扩散 -- */
+  --ink-bleed: 0 0 1px rgba(26,18,8,0.4), 0.5px 0.3px 2px rgba(60,40,20,0.2), -0.3px 0.4px 3px rgba(80,55,30,0.12);
+  --ink-bleed-light: 0 0 0.8px rgba(26,18,8,0.3), 0.3px 0.2px 1.5px rgba(60,40,20,0.15);
 
   /* -- 字体 -- */
   --font-serif: 'Cormorant Garamond', 'Noto Serif SC', serif;
