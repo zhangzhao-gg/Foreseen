@@ -19,6 +19,60 @@ const log = (tag: string, detail?: unknown) => {
   if (import.meta.env.DEV) console.log(`[Foreseen] ${tag}`, detail ?? '')
 }
 
+/* 浮尘微粒 — 25 颗金色尘埃，极慢漂移 */
+const DUST_COUNT = 30
+const DUST_COLORS = [
+  { core: 'rgba(255,200,80,0.9)', glow: 'rgba(255,170,50,0.5)' },
+  { core: 'rgba(255,220,140,0.85)', glow: 'rgba(255,200,100,0.4)' },
+  { core: 'rgba(200,180,255,0.7)', glow: 'rgba(160,140,255,0.35)' },
+]
+const dustParticles = Array.from({ length: DUST_COUNT }, (_, i) => {
+  const size = 2.5 + (i % 5) * 0.7
+  const duration = 16 + (i * 1.3) % 12
+  const delay = -(i * 0.9) % duration
+  const left = (i * 13 + 5) % 90 + 5
+  const top = (i * 19 + 7) % 90 + 5
+  const dx = -12 + (i % 7) * 5
+  const dy = -25 - (i % 5) * 7
+  const peakOpacity = 0.45 + (i % 4) * 0.12
+  const color = DUST_COLORS[i % DUST_COLORS.length]
+  const twinkleDuration = 2 + (i % 6) * 0.7
+  const twinkleDelay = (i * 0.4) % twinkleDuration
+  const twinklePeak = 1.8 + (i % 3) * 0.6
+  const glowSize = 3 + (i % 4) * 2
+  return { size, duration, delay, left, top, dx, dy, peakOpacity, color, twinkleDuration, twinkleDelay, twinklePeak, glowSize }
+})
+
+function DustParticles() {
+  return (
+    <div className="dust-particles">
+      {dustParticles.map((p, i) => (
+        <div
+          key={i}
+          className="dust-particle"
+          style={{
+            width: p.size + 'px',
+            height: p.size + 'px',
+            left: p.left + '%',
+            top: p.top + '%',
+            '--dust-duration': p.duration + 's',
+            '--dust-delay': p.delay + 's',
+            '--dust-dx': p.dx + 'px',
+            '--dust-dy': p.dy + 'px',
+            '--dust-peak-opacity': p.peakOpacity,
+            '--dust-color': p.color.core,
+            '--dust-glow-color': p.color.glow,
+            '--dust-glow-size': p.glowSize + 'px',
+            '--dust-twinkle-duration': p.twinkleDuration + 's',
+            '--dust-twinkle-delay': p.twinkleDelay + 's',
+            '--dust-twinkle-peak': p.twinklePeak,
+          } as React.CSSProperties}
+        />
+      ))}
+    </div>
+  )
+}
+
 function TypedPrompt({ text, fading }: { text: string; fading?: boolean }) {
   const [displayed, setDisplayed] = useState('')
   const idxRef = useRef(0)
@@ -315,6 +369,7 @@ export default function BookPage() {
     <div className="book-page">
       <HistoryDrawer open={drawerOpen} onToggle={() => setDrawerOpen(v => !v)} />
 
+      <DustParticles />
       <div className="book-page__vignette" />
 
       <svg width="0" height="0" style={{ position: 'absolute' }}>
@@ -337,6 +392,7 @@ export default function BookPage() {
 
       <div ref={bookRef} className="book-page__book">
         <div className="book-page__spine" />
+        <div className="book-page__page-under" />
         <div className="book-page__pages" />
 
         <div ref={paperRef} className="book-page__paper">

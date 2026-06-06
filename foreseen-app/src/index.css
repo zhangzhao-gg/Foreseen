@@ -59,3 +59,52 @@ body::after {
     radial-gradient(ellipse at 40% 30%, rgba(255,200,100,0.04) 0%, transparent 50%),
     radial-gradient(ellipse at 70% 70%, rgba(255,180,80,0.03) 0%, transparent 40%);
 }
+
+/* ========================================
+ * 浮尘微粒 — 光线中缓缓飘过的金色尘埃
+ * ======================================== */
+
+.dust-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  overflow: hidden;
+}
+
+.dust-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--dust-color, rgba(255,210,120,0.9)) 0%, transparent 70%);
+  box-shadow: 0 0 var(--dust-glow-size, 4px) var(--dust-glow-color, rgba(255,190,80,0.4));
+  animation:
+    dust-drift var(--dust-duration) linear infinite,
+    dust-twinkle var(--dust-twinkle-duration, 3s) ease-in-out infinite;
+  animation-delay: var(--dust-delay), var(--dust-twinkle-delay, 0s);
+  opacity: 0;
+}
+
+@keyframes dust-drift {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+  10% {
+    opacity: var(--dust-peak-opacity);
+  }
+  50% {
+    transform: translate(calc(var(--dust-dx) * 0.5), calc(var(--dust-dy) * 0.5)) scale(1);
+  }
+  90% {
+    opacity: var(--dust-peak-opacity);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dust-dx), var(--dust-dy)) scale(0.4);
+  }
+}
+
+@keyframes dust-twinkle {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(var(--dust-twinkle-peak, 2.2)); }
+}

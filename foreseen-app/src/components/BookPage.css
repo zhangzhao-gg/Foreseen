@@ -37,61 +37,117 @@
     drop-shadow(0 24px 48px rgba(26, 20, 16, 0.2));
 }
 
-/* 书脊：左侧深色皮革 */
+/* 书脊：古籍皮革，横向凸脊 */
 .book-page__spine {
-  width: 28px;
+  width: 34px;
   min-height: calc(var(--vh-lock, 100vh) * 0.6);
   background:
-    linear-gradient(90deg, #3d2b1a 0%, #5c3d24 40%, #4a3320 70%, #3d2b1a 100%);
-  border-radius: 4px 0 0 4px;
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='lt'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23lt)' opacity='0.12'/%3E%3C/svg%3E"),
+    linear-gradient(90deg,
+      #2e1c0e 0%, #4a3018 15%, #5c3d24 35%,
+      #6b4528 50%,
+      #5c3d24 65%, #4a3018 85%, #2e1c0e 100%
+    );
+  border-radius: 5px 0 0 5px;
   box-shadow:
-    inset -3px 0 6px rgba(0, 0, 0, 0.4),
-    inset 2px 0 4px rgba(255, 255, 255, 0.05);
+    inset -4px 0 8px rgba(0, 0, 0, 0.5),
+    inset 3px 0 6px rgba(0, 0, 0, 0.3),
+    inset 0 0 12px rgba(0, 0, 0, 0.2);
   position: relative;
   z-index: 2;
 }
 
-/* 书脊纹理装饰线 */
+/* 凸脊 raised bands — 5 条横向凸起 */
 .book-page__spine::before {
   content: '';
   position: absolute;
-  top: 10%;
-  bottom: 10%;
-  left: 50%;
-  width: 2px;
-  transform: translateX(-50%);
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(139, 94, 60, 0.3) 20%,
-    rgba(139, 94, 60, 0.5) 50%,
-    rgba(139, 94, 60, 0.3) 80%,
-    transparent 100%
-  );
+  inset: 0;
+  border-radius: inherit;
+  background:
+    /* 凸脊 1 */
+    linear-gradient(180deg,
+      transparent 11%, rgba(80,55,30,0.6) 11.5%, rgba(110,75,40,0.8) 12.5%,
+      rgba(60,40,20,0.5) 13.5%, transparent 14%
+    ),
+    /* 凸脊 2 */
+    linear-gradient(180deg,
+      transparent 28%, rgba(80,55,30,0.6) 28.5%, rgba(110,75,40,0.8) 29.5%,
+      rgba(60,40,20,0.5) 30.5%, transparent 31%
+    ),
+    /* 凸脊 3 — 中央 */
+    linear-gradient(180deg,
+      transparent 48%, rgba(80,55,30,0.6) 48.5%, rgba(110,75,40,0.8) 49.5%,
+      rgba(60,40,20,0.5) 50.5%, transparent 51%
+    ),
+    /* 凸脊 4 */
+    linear-gradient(180deg,
+      transparent 68%, rgba(80,55,30,0.6) 68.5%, rgba(110,75,40,0.8) 69.5%,
+      rgba(60,40,20,0.5) 70.5%, transparent 71%
+    ),
+    /* 凸脊 5 */
+    linear-gradient(180deg,
+      transparent 86%, rgba(80,55,30,0.6) 86.5%, rgba(110,75,40,0.8) 87.5%,
+      rgba(60,40,20,0.5) 88.5%, transparent 89%
+    );
 }
 
-/* 页面厚度：书的其余纸页，始终可见，不跟随翻转 */
+/* 脊间烫金装饰线 */
+.book-page__spine::after {
+  content: '';
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  top: 0;
+  bottom: 0;
+  background:
+    linear-gradient(180deg,
+      transparent 15%, rgba(180,145,80,0.3) 15.2%, transparent 15.4%,
+      transparent 31.8%, rgba(180,145,80,0.25) 32%, transparent 32.2%,
+      transparent 51.8%, rgba(180,145,80,0.3) 52%, transparent 52.2%,
+      transparent 71.8%, rgba(180,145,80,0.25) 72%, transparent 72.2%,
+      transparent 89.8%, rgba(180,145,80,0.3) 90%, transparent 90.2%
+    );
+}
+
+/* 下一页：翻页时露出的纸面，介于活页和页堆之间 */
+.book-page__page-under {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 34px;
+  right: 0;
+  border-radius: 0 2px 2px 0;
+  background-color: #ddd0b4;
+  background-image:
+    radial-gradient(ellipse at 70% 30%, rgba(120,80,30,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 80%, rgba(100,65,20,0.04) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.03'/%3E%3C/svg%3E");
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.06);
+  z-index: 0;
+}
+
+/* 页面厚度：陈年旧纸堆，比活页面明显更暗更黄 */
 .book-page__pages {
   position: absolute;
   top: 6px;
   right: -24px;
   bottom: -24px;
-  width: calc(100% - 28px);
-  left: 28px;
+  width: calc(100% - 34px);
+  left: 34px;
   border-radius: 0 3px 3px 0;
-  background: #b89e70;
+  background: #9c8558;
   background-image:
     repeating-linear-gradient(
       180deg,
-      rgba(160, 130, 80, 0.5) 0px,
+      rgba(80, 60, 30, 0.4) 0px,
       transparent 1px,
       transparent 2px
     );
   box-shadow:
-    3px 3px 8px rgba(26, 20, 16, 0.3),
-    inset -3px 0 6px rgba(0, 0, 0, 0.06),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.06);
-  z-index: 0;
+    3px 3px 8px rgba(26, 20, 16, 0.4),
+    inset -3px 0 8px rgba(0, 0, 0, 0.12),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+  z-index: -1;
 }
 
 /* 纸带本体 — JS 设置 --rune-* / --shadow-* 驱动视觉张力 */
@@ -123,6 +179,29 @@
   z-index: 1;
   filter: url(#paper-edge);
   transition: box-shadow 1.5s var(--ease-breath);
+}
+
+/* 右上角卷页 */
+.book-page__paper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  background:
+    linear-gradient(225deg,
+      transparent 50%,
+      rgba(180,160,120,0.4) 50%,
+      rgba(160,140,100,0.6) 60%,
+      var(--parchment) 60%
+    );
+  box-shadow:
+    -2px 2px 4px rgba(0,0,0,0.15),
+    -1px 1px 2px rgba(0,0,0,0.1);
+  border-radius: 0 0 0 4px;
+  z-index: 15;
+  pointer-events: none;
 }
 
 /* 装订线阴影：左内侧纵向暗影 */
