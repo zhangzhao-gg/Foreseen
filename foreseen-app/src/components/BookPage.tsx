@@ -150,37 +150,45 @@ export default function BookPage() {
   // unmount cleanup
   useEffect(() => () => { abortRef.current?.abort() }, [])
 
-  const [loadingFadeOut, setLoadingFadeOut] = useState(false)
-
-  // 等字体加载完成，最短展示 1.5s
+  // 等字体加载完成即开始仪式
   useEffect(() => {
-    const start = performance.now()
-    document.fonts.ready.then(() => {
-      const elapsed = performance.now() - start
-      const remain = Math.max(0, 1500 - elapsed)
-      setTimeout(() => setLoadingFadeOut(true), remain)
-    })
+    document.fonts.ready.then(() => setLoaded(true))
   }, [])
 
-  // fadeOut 后等 transition 结束再切场
-  useEffect(() => {
-    if (!loadingFadeOut) return
-    const timer = setTimeout(() => setLoaded(true), 1100)
-    return () => clearTimeout(timer)
-  }, [loadingFadeOut])
+  const sceneRef = useRef<HTMLDivElement>(null)
+  const lightRef = useRef<HTMLDivElement>(null)
 
-  // 开场翻书动画
+  // 入口仪式：黑暗 → 光起 → 书现
   useEffect(() => {
     if (!loaded) return
     const book = bookRef.current
     const paper = paperRef.current
-    if (!book || !paper) return
+    const scene = sceneRef.current
+    const light = lightRef.current
+    if (!book || !paper || !scene || !light) return
 
     const tl = gsap.timeline()
+
+    // 初始：全黑，书隐藏，光点为零
+    tl.set(scene, { backgroundColor: '#1a1410' })
+    tl.set(book, { opacity: 0, scale: 0.95, y: 20 })
     tl.set(paper, { rotateY: -110, transformOrigin: 'left center' })
-    tl.set(book, { opacity: 0, scale: 0.97 })
-    tl.to(book, { opacity: 1, scale: 1, duration: 1.8, ease: 'power1.out' })
-    tl.to(paper, { rotateY: 0, duration: 2.5, ease: 'power2.out' }, '-=1.2')
+    tl.set(light, { opacity: 0, scale: 0.3 })
+
+    // 光起：光点扩散
+    tl.to(light, { opacity: 1, scale: 1, duration: 2, ease: 'power2.out' }, 0.3)
+
+    // 桌面显现：背景从黑过渡
+    tl.to(scene, { backgroundColor: 'transparent', duration: 2.5, ease: 'power1.out' }, 0.8)
+
+    // 书浮现
+    tl.to(book, { opacity: 1, scale: 1, y: 0, duration: 2, ease: 'power2.out' }, 1.5)
+
+    // 翻页
+    tl.to(paper, { rotateY: 0, duration: 2.5, ease: 'power2.out' }, 2.5)
+
+    // 光缓慢消散（变成常驻微弱环境光）
+    tl.to(light, { opacity: 0.3, duration: 3, ease: 'power1.inOut' }, 3)
   }, [loaded])
 
   const intensityRef = useRef(0)
@@ -407,10 +415,13 @@ export default function BookPage() {
 
   if (!loaded) {
     return (
-      <div className={`book-page book-page--loading${loadingFadeOut ? ' book-page--loading-out' : ''}`}>
-        <div className="book-page__loader">
-          <span className="book-page__loader-symbol">ꙮ</span>
-          <span className="book-page__loader-text">loading...</span>
+      <div className="book-page book-page--loading">
+        <div className="loading__surge" />
+        <DustParticles />
+        <div className="loading__runes">
+          <span className="loading__rune">ᚦᛁᛋ ᛒᚩᚳ ᚱᛖᛗᛖᛗᛒᛖᚱᛋ</span>
+          <span className="loading__rune">ꙮ</span>
+          <span className="loading__rune">ᚠᛟᚱᛖᛋᛖᛖᚾ</span>
         </div>
       </div>
     )
@@ -418,6 +429,9 @@ export default function BookPage() {
 
   return (
     <div className="book-page">
+      <div ref={sceneRef} className="book-page__scene" />
+      <div ref={lightRef} className="book-page__light" />
+
       <HistoryDrawer open={drawerOpen} onToggle={() => setDrawerOpen(v => !v)} />
 
       <DustParticles />
@@ -442,6 +456,14 @@ export default function BookPage() {
       </svg>
 
       <div ref={bookRef} className="book-page__book">
+        <img src="/paper.png" alt="" className="book-page__prop book-page__prop--paper" />
+        <img src="/ink.png" alt="" className="book-page__prop book-page__prop--ink" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
+        <img src="/bottle.png" alt="" className="book-page__prop book-page__prop--bottle" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
+        <img src="/coin.png" alt="" className="book-page__prop book-page__prop--coin book-page__prop--coin-1" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
+        <img src="/coin.png" alt="" className="book-page__prop book-page__prop--coin book-page__prop--coin-2" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
+        <img src="/coin.png" alt="" className="book-page__prop book-page__prop--coin book-page__prop--coin-3" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
+        <img src="/coin.png" alt="" className="book-page__prop book-page__prop--coin book-page__prop--coin-4" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
+        <img src="/coin.png" alt="" className="book-page__prop book-page__prop--coin book-page__prop--coin-5" onClick={e => { e.currentTarget.classList.remove('book-page__prop--bounce'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('book-page__prop--bounce') }} />
         <div className="book-page__spine" />
         <div className="book-page__page-under">
           <span className="page-under__line">the one who writes here never leaves</span>
