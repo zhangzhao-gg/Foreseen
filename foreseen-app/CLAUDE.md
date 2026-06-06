@@ -26,16 +26,8 @@ vite.config.ts - Vite 构建配置
 
 ## 部署
 
-服务器: `81.70.158.243` (Ubuntu 24.04)
-域名: `https://foreseen.okethan.top`
-静态文件路径: `/opt/foreseen/`
-Nginx 配置: `/etc/nginx/sites-available/foreseen.okethan.top`
+详见 `docs/deploy.md`（内部运维文档，不随代码开源）。
 
-```bash
-# 构建 + 部署（一条命令）
-cd foreseen-app && npm run build && rsync -avz --delete -e ssh dist/ ubuntu@81.70.158.243:/opt/foreseen/
-```
-
-纯前端项目，无后端服务，Nginx 直接托管 dist 静态文件。HTTPS 由 Let's Encrypt certbot 自动续期。
+架构概要：前端静态文件由 Nginx 托管，`/api/*` 反代至 Node 代理层（隐藏 API Key），前端不接触密钥。
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md

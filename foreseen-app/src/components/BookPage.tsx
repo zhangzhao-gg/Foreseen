@@ -20,7 +20,7 @@ const log = (tag: string, detail?: unknown) => {
 }
 
 /* 浮尘微粒 — 25 颗金色尘埃，极慢漂移 */
-const DUST_COUNT = 35
+const DUST_COUNT = 60
 const DUST_COLORS = [
   { core: 'rgba(255,190,60,0.95)', glow: 'rgba(255,160,30,0.6)' },
   { core: 'rgba(255,130,80,0.9)', glow: 'rgba(255,100,50,0.5)' },
@@ -30,7 +30,7 @@ const DUST_COLORS = [
   { core: 'rgba(200,255,120,0.8)', glow: 'rgba(160,230,80,0.4)' },
 ]
 const dustParticles = Array.from({ length: DUST_COUNT }, (_, i) => {
-  const size = 3 + (i % 5) * 0.8
+  const size = i % 8 === 0 ? 8 + (i % 3) * 2 : 3 + (i % 5) * 0.8
   const duration = 8 + (i * 0.9) % 7
   const delay = -(i * 0.6) % duration
   const left = (i * 13 + 5) % 90 + 5
@@ -105,7 +105,7 @@ interface Message {
   content: string
 }
 
-const API_KEY = import.meta.env.VITE_MINIMAX_KEY || ''
+const API_ENABLED = import.meta.env.VITE_API_ENABLED !== 'false'
 
 export default function BookPage() {
   const [phase, setPhase] = useState<Phase>('input')
@@ -123,7 +123,7 @@ export default function BookPage() {
       rotate: -25 + Math.random() * 50,
       opacity: 0.08 + Math.random() * 0.12,
       blur: 0.4 + Math.random() * 0.8,
-      scale: 1 + Math.random() * 3,
+      scale: 1 + Math.random() * 2,
     }])
   }, [])
 
@@ -246,11 +246,11 @@ export default function BookPage() {
 
     let insight: string
     try {
-      if (!API_KEY) {
+      if (!API_ENABLED) {
         insight = '来写字的人。他来了，又走了。和所有人一样——以为翻开书就能找到答案，其实答案在来之前就已经有了。这本书什么都不给。它只是一面镜子，让人看见自己不敢直视的东西。'
       } else {
         const msgs = historyRef.current.map(m => toMessage(m.role, m.content))
-        insight = await summarize(msgs, API_KEY, controller.signal)
+        insight = await summarize(msgs, '', controller.signal)
       }
     } catch (err) {
       if ((err as Error).name === 'AbortError') return
@@ -279,9 +279,11 @@ export default function BookPage() {
     historyRef.current.push({ role: 'assistant', content: resp.text })
     updateIntensity(resp)
 
-    // 如果是结束回复，不展示文字，直接进总结
+    // 结束回复：展示告别话语，不消失，然后触发总结
     if (resp.ending) {
-      triggerEnding()
+      setSystemText([resp.text])
+      setPhase('showing')
+      setTimeout(() => triggerEnding(), 3000)
       return
     }
 
@@ -319,11 +321,11 @@ export default function BookPage() {
     abortRef.current = controller
 
     let resp: AIResponse
-    if (!API_KEY) {
+    if (!API_ENABLED) {
       resp = { text: '你写下来了。来找我的人，都是已经知道答案的人。' }
     } else {
       const msgs = historyRef.current.map(m => toMessage(m.role, m.content))
-      resp = await chat(msgs, API_KEY, controller.signal)
+      resp = await chat(msgs, '', controller.signal)
     }
 
     if (controller.signal.aborted) return

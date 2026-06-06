@@ -620,30 +620,44 @@
 }
 
 /* ========================================
- * 桌子边沿 — 仅 PC 宽屏显示
- * 给画面加上物理边界，消除空旷感
+ * 桌子边框 — 仅 PC 宽屏显示
+ * 古典画框：多层阶梯凸起 + 光影立体
  * ======================================== */
 
 @media (min-width: 768px) {
+  /* 第一层：最外侧深色底边 */
   .book-page::before {
     content: '';
     position: fixed;
-    inset: 12px;
-    border: 3px solid rgba(30, 18, 8, 0.6);
-    border-radius: 8px;
-    box-shadow:
-      inset 0 0 20px rgba(0,0,0,0.3),
-      inset 0 0 60px rgba(0,0,0,0.15),
-      0 0 0 12px #1a0f08,
-      0 0 0 14px rgba(60, 40, 20, 0.4);
+    inset: 0;
     pointer-events: none;
     z-index: 9990;
-    background: linear-gradient(
-      180deg,
-      rgba(30,18,8,0.08) 0%,
-      transparent 3%,
-      transparent 97%,
-      rgba(30,18,8,0.08) 100%
-    );
+    box-shadow:
+      /* 外层深色台阶 */
+      inset 0 0 0 10px #1a0f08,
+      /* 第二层：斜面高光 */
+      inset 10px 10px 0 0 #6b4928,
+      inset -10px -10px 0 0 #2a1808,
+      inset 0 0 0 20px #3d2510,
+      /* 第三层：金色凸脊 */
+      inset 20px 20px 0 0 #a08040,
+      inset -20px -20px 0 0 #2e1a0a,
+      inset 0 0 0 26px #7a5230,
+      /* 第四层：宽斜面 */
+      inset 26px 26px 0 0 #8b6838,
+      inset -26px -26px 0 0 #1e1108,
+      inset 0 0 0 36px #4a2e18,
+      /* 第五层：内金色凸脊 */
+      inset 36px 36px 0 0 #b89850,
+      inset -36px -36px 0 0 #2a1808,
+      inset 0 0 0 40px #6b4425,
+      /* 第六层：最内收口 */
+      inset 40px 40px 0 0 #7a5830,
+      inset -40px -40px 0 0 #0f0a04,
+      inset 0 0 0 44px #3d2510,
+      /* 最内边缘暗线 */
+      inset 0 0 0 46px #0f0a04,
+      /* 内部空间柔和暗角 */
+      inset 0 0 50px rgba(0,0,0,0.35);
   }
 }
